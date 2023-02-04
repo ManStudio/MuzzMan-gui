@@ -11,7 +11,7 @@ impl iced::widget::text_input::StyleSheet for TextInputStyle {
         match self {
             TextInputStyle::Text => Appearance {
                 background: iced::Background::Color(Color::from_rgb(0.1, 0.1, 0.1)),
-                border_radius: 10.0,
+                border_radius: 100.0,
                 border_width: 1.0,
                 border_color: Color::BLACK,
             },

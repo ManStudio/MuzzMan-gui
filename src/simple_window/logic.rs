@@ -8,7 +8,8 @@ use crate::MuzzManSimple;
 pub enum Message {
     Close,
     Minimize,
-    SimpleSettingsOrManager,
+    Settings,
+    Morph,
     ChangeUrl(String),
     DownloadOrStop,
     Event(iced::Event),
@@ -22,7 +23,6 @@ impl Message {
             Message::Minimize => {
                 return Command::single(Action::Window(window::Action::Minimize(true)))
             }
-            Message::SimpleSettingsOrManager => {}
             Message::ChangeUrl(new) => app.url = new,
             Message::DownloadOrStop => {
                 if app.downloading {
@@ -88,6 +88,8 @@ impl Message {
                     app.downloading = false;
                 }
             }
+            Message::Settings => todo!(),
+            Message::Morph => todo!(),
         }
         Command::none()
     }

@@ -8,6 +8,20 @@ edition = "2021"
 [[bin]]
 name = "simple"
 path = "./src/simple_window/main.rs"
+[[bin]]
+name = "simple_settings"
+path = "./src/simple_settings_window/main.rs"
+
+[[bin]]
+name = "progress"
+path = "./src/progress_window/main.rs"
+
+[[bin]]
+name = "manager"
+path = "./src/manager_window/main.rs"
+[[bin]]
+name = "settings"
+path = "./src/settings_window/main.rs"
 
 [dependencies]
 clap = { version = "4.1.4", features = ["derive"] }

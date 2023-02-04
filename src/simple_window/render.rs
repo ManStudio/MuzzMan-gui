@@ -3,7 +3,7 @@ use iced::{
     Element, Padding,
 };
 use iced_native::widget::container;
-use muzzman_iced::themes::{ButtonStyle, ContainerStyle, TextInputStyle};
+use muzzman_iced::themes::{ButtonStyle, ContainerStyle, ProgressBarStyle, TextInputStyle};
 
 use crate::{logic::Message, MuzzManSimple};
 
@@ -14,49 +14,64 @@ impl MuzzManSimple {
         //
 
         let top_bar = {
-            let close_icon_bytes = include_bytes!("../../close_button.svg");
-            let close_icon = iced_native::svg::Handle::from_memory(&close_icon_bytes[..]);
-            let close_svg = svg(close_icon);
+            let settings_icon_bytes = include_bytes!("../../Settings.svg");
+            let settings_icon = iced_native::svg::Handle::from_memory(&settings_icon_bytes[..]);
+            let settings_svg = svg(settings_icon);
 
-            let close_button = button(close_svg)
-                .on_press(Message::Close)
-                .padding(Padding::from(3))
+            let settings_button = button(settings_svg)
+                .on_press(Message::Settings)
                 .width(iced::Length::Units(38))
                 .height(iced::Length::Units(38))
                 .style(ButtonStyle::Flat.into());
 
-            let mimimize_icon_bytes = include_bytes!("../../mimimize_button.svg");
+            let morph_icon_bytes = include_bytes!("../../Morph.svg");
+            let morph_icon = iced_native::svg::Handle::from_memory(&morph_icon_bytes[..]);
+            let morph_svg = svg(morph_icon);
+
+            let morph_button = button(morph_svg)
+                .on_press(Message::Morph)
+                .width(iced::Length::Units(38))
+                .height(iced::Length::Units(38))
+                .style(ButtonStyle::Flat.into());
+
+            let progress_top_bar = progress_bar(0.0..=1.0, self.progress)
+                .width(iced::Length::Fill)
+                .style(ProgressBarStyle::Normal);
+            let progress_top_bar = iced::widget::column(vec![progress_top_bar.into()])
+                .padding(Padding {
+                    top: 5,
+                    right: 0,
+                    bottom: 0,
+                    left: 5,
+                })
+                .width(iced::Length::Fill)
+                .height(iced::Length::Fill);
+
+            let mimimize_icon_bytes = include_bytes!("../../Minimize Button.svg");
             let mimimize_icon = iced_native::svg::Handle::from_memory(&mimimize_icon_bytes[..]);
             let mimimize_svg = svg(mimimize_icon);
 
             let mimimize_button = button(mimimize_svg)
                 .on_press(Message::Minimize)
-                .padding(Padding::from(3))
                 .width(iced::Length::Units(38))
                 .height(iced::Length::Units(38))
                 .style(ButtonStyle::Flat.into());
 
-            let bigger_icon_bytes = include_bytes!("../../bigger_button.svg");
-            let bigger_icon = iced_native::svg::Handle::from_memory(&bigger_icon_bytes[..]);
-            let bigger_svg = svg(bigger_icon);
+            let close_icon_bytes = include_bytes!("../../Close Button.svg");
+            let close_icon = iced_native::svg::Handle::from_memory(&close_icon_bytes[..]);
+            let close_svg = svg(close_icon);
 
-            let bigger_button = button(bigger_svg)
-                .on_press(Message::SimpleSettingsOrManager)
-                .padding(Padding::from(3))
+            let close_button = button(close_svg)
+                .on_press(Message::Close)
                 .width(iced::Length::Units(38))
                 .height(iced::Length::Units(38))
                 .style(ButtonStyle::Flat.into());
-
-            let progress_top_bar = progress_bar(0.0..=1.0, self.progress).width(iced::Length::Fill);
-            let progress_top_bar = iced::widget::column(vec![progress_top_bar.into()])
-                .padding(Padding::from(3))
-                .width(iced::Length::Fill);
 
             let top_bar = iced::widget::row(vec![
-                bigger_button.into(),
+                settings_button.into(),
+                morph_button.into(),
                 progress_top_bar.into(),
                 mimimize_button.into(),
-                horizontal_space(iced::Length::Units(5)).into(),
                 close_button.into(),
             ]);
 
@@ -93,7 +108,7 @@ impl MuzzManSimple {
         //
 
         let footer = {
-            let status = text(&self.status).size(12);
+            let status = text(&self.status).size(14);
             container(status)
                 .style(ContainerStyle::Bar)
                 .width(iced::Length::Fill)

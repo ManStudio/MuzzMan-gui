@@ -5,10 +5,32 @@ use std::{
     path::Path,
 };
 
+use muzzman_daemon::prelude::LocationId;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Config {}
+pub struct Config {
+    #[serde(default = "tick_default")]
+    pub tick: u64,
+    #[serde(default = "location_default")]
+    pub location_id: LocationId,
+    #[serde(default = "destroy_element_default")]
+    pub destroy_element: bool,
+}
+
+fn tick_default() -> u64 {
+    100
+}
+
+fn location_default() -> LocationId {
+    LocationId(Vec::new())
+}
+
+fn destroy_element_default() -> bool {
+    true
+}
+
+// Wrap
 
 pub struct WrapConfig<T: Serialize + DeserializeOwned> {
     pub data: T,
@@ -43,11 +65,9 @@ impl<T: Serialize + DeserializeOwned> WrapConfig<T> {
     }
 }
 
-impl<T: Serialize + DeserializeOwned> Drop for WrapConfig<T> {
-    fn drop(&mut self) {
-        self.update()
-    }
-}
+// here was implemented Drop for WrapConfig!!!
+// If the settings is closed but the simple, manager or progress is open then is closed the
+// settings will be override
 
 impl<T: Serialize + DeserializeOwned> Deref for WrapConfig<T> {
     type Target = T;

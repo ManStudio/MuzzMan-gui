@@ -1,5 +1,7 @@
 use iced::{widget::container::Appearance, Color};
 
+use super::Colors;
+
 pub enum ContainerStyle {
     Bar,
 }
@@ -11,7 +13,7 @@ impl iced::widget::container::StyleSheet for ContainerStyle {
         match self {
             ContainerStyle::Bar => Appearance {
                 text_color: Some(Color::WHITE),
-                background: Some(iced::Background::Color(Color::from_rgb(0.08, 0.08, 0.08))),
+                background: Some(iced::Background::Color(Colors::default().text_background)),
                 border_radius: 0.0,
                 border_width: 0.0,
                 border_color: Color::BLACK,

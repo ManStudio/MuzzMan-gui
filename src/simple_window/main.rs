@@ -6,7 +6,10 @@ use muzzman_daemon::{
     prelude::{ERef, LocationId, TElement, TLocation, TSession},
     DaemonSession,
 };
-use muzzman_iced::{config::WrapConfig, simple_config::SimpleConfig, themes::get_theme};
+use muzzman_iced::{
+    config::{Config, WrapConfig},
+    themes::get_theme,
+};
 
 mod flags;
 mod get_filename;
@@ -20,7 +23,7 @@ pub struct MuzzManSimple {
     progress: f32,
     element: Option<ERef>,
     session: Box<dyn TSession>,
-    config: WrapConfig<SimpleConfig>,
+    config: WrapConfig<Config>,
 }
 
 impl Application for MuzzManSimple {
@@ -50,10 +53,10 @@ impl Application for MuzzManSimple {
         let config_path = if let Some(config_path) = flags.config {
             config_path
         } else {
-            get_muzzman_dir().join("iced").join("simple_config.toml")
+            get_muzzman_dir().join("iced").join("config.toml")
         };
 
-        let config = WrapConfig::<SimpleConfig>::load(&config_path).unwrap();
+        let config = WrapConfig::<Config>::load(&config_path).unwrap();
 
         if let Some(command) = flags.command {
             match command {

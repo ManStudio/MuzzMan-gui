@@ -1,5 +1,7 @@
 use iced::{Color, Vector};
 
+use super::Colors;
+
 pub enum ButtonStyle {
     Flat,
     Download,
@@ -20,7 +22,7 @@ impl iced::widget::button::StyleSheet for ButtonStyle {
             },
             ButtonStyle::Download => iced::widget::button::Appearance {
                 shadow_offset: Vector::new(0.0, 0.0),
-                background: Some(iced::Background::Color(Color::from_rgb8(0, 125, 0))),
+                background: Some(iced::Background::Color(Colors::default().primary)),
                 border_radius: 100.0,
                 border_width: 0.0,
                 border_color: Color::BLACK,
