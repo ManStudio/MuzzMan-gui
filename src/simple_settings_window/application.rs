@@ -2,7 +2,9 @@ use iced::{Application, Command};
 
 use crate::{flags::Flags, logic::Message};
 
-pub struct MuzzManSimpleSettings {}
+pub struct MuzzManSimpleSettings {
+    last_
+}
 
 impl Application for MuzzManSimpleSettings {
     type Executor = iced::executor::Default;
