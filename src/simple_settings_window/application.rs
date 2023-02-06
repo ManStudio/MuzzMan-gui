@@ -1,10 +1,12 @@
 use iced::{Application, Command, Point};
+use muzzman_daemon::{common::get_muzzman_dir, prelude::TSession, DaemonSession};
+use muzzman_iced::config::{Config, WrapConfig};
 
 use crate::{flags::Flags, logic::Message};
 
 pub struct MuzzManSimpleSettings {
-    pub mouse_position: Point,
-    pub mouse_last_position: Point,
+    pub config: WrapConfig<Config>,
+    pub session: Box<dyn TSession>,
 }
 
 impl Application for MuzzManSimpleSettings {
@@ -17,13 +19,16 @@ impl Application for MuzzManSimpleSettings {
     type Flags = Flags;
 
     fn new(flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
-        (
-            Self {
-                mouse_position: Point::default(),
-                mouse_last_position: Point::default(),
-            },
-            Command::none(),
-        )
+        let session = DaemonSession::new().unwrap().create_session();
+
+        let config_path = if let Some(config_path) = flags.config {
+            config_path
+        } else {
+            get_muzzman_dir().join("iced").join("config.toml")
+        };
+
+        let config = WrapConfig::<Config>::load(&config_path).unwrap();
+        (Self { config, session }, Command::none())
     }
 
     fn title(&self) -> String {

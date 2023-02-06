@@ -9,19 +9,19 @@ use crate::{application::MuzzManSimpleSettings, logic::Message};
 impl MuzzManSimpleSettings {
     pub fn render(&self) -> iced::Element<Message, iced::Renderer> {
         let top_bar = {
-            let close_svg = iced_native::svg::Handle::from_memory(
-                &include_bytes!("../../Close Button.svg")[..],
-            );
             let minimize_svg = iced_native::svg::Handle::from_memory(
                 &include_bytes!("../../Minimize Button.svg")[..],
             );
             let maximize_svg = iced_native::svg::Handle::from_memory(
                 &include_bytes!("../../Maximize Button.svg")[..],
             );
+            let close_svg = iced_native::svg::Handle::from_memory(
+                &include_bytes!("../../Close Button.svg")[..],
+            );
 
-            let close_svg = svg(close_svg);
             let minimize_svg = svg(minimize_svg);
             let maximize_svg = svg(maximize_svg);
+            let close_svg = svg(close_svg);
 
             let close_button = button(close_svg)
                 .style(ButtonStyle::Flat.into())
@@ -52,16 +52,25 @@ impl MuzzManSimpleSettings {
         };
 
         let body = {
-            container(text("body"))
-                .width(iced::Length::Fill)
-                .height(iced::Length::Fill)
+            container(column(vec![row(vec![
+                text("Testing: ").into(),
+                text("Value").into(),
+            ])
+            .into()]))
+            .width(iced::Length::Fill)
+            .height(iced::Length::Fill)
         };
 
         let footer = {
-            container(text("footer"))
-                .width(iced::Length::Fill)
-                .height(iced::Length::Units(30))
-                .style(ContainerStyle::Bar)
+            container(row(vec![
+                horizontal_space(iced::Length::Fill).into(),
+                button("Load").on_press(Message::Load).into(),
+                button("Save").on_press(Message::Save).into(),
+            ]))
+            .width(iced::Length::Fill)
+            .height(iced::Length::Units(30))
+            .center_y()
+            .style(ContainerStyle::Bar)
         };
 
         container(column(vec![top_bar.into(), body.into(), footer.into()]))

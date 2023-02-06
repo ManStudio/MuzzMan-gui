@@ -24,7 +24,7 @@ fn main() {
         },
         flags: Flags::default(),
         default_font: None,
-        default_text_size: 0,
+        default_text_size: 12,
         text_multithreading: false,
         antialiasing: false,
         exit_on_close_request: false,

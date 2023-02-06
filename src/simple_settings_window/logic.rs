@@ -9,6 +9,8 @@ pub enum Message {
     Maximize,
     Event(iced::Event),
     Tick(iced::time::Instant),
+    Save,
+    Load,
     Command(Command<Message>),
 }
 
@@ -20,6 +22,8 @@ impl Clone for Message {
             Message::Maximize => Message::Maximize,
             Message::Event(event) => Message::Event(event.clone()),
             Message::Tick(tick) => Message::Tick(*tick),
+            Message::Save => Message::Save,
+            Message::Load => Message::Load,
             Message::Command(_) => todo!(),
         }
     }
@@ -49,6 +53,8 @@ impl Message {
             Message::Event(_event) => {}
             Message::Tick(_) => {}
             Message::Command(command) => return command,
+            Message::Save => app.config.update(),
+            Message::Load => app.config.reload(),
         };
         Command::none()
     }
