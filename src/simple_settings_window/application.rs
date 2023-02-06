@@ -1,9 +1,10 @@
-use iced::{Application, Command};
+use iced::{Application, Command, Point};
 
 use crate::{flags::Flags, logic::Message};
 
 pub struct MuzzManSimpleSettings {
-    last_
+    pub mouse_position: Point,
+    pub mouse_last_position: Point,
 }
 
 impl Application for MuzzManSimpleSettings {
@@ -16,7 +17,13 @@ impl Application for MuzzManSimpleSettings {
     type Flags = Flags;
 
     fn new(flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
-        (Self {}, Command::none())
+        (
+            Self {
+                mouse_position: Point::default(),
+                mouse_last_position: Point::default(),
+            },
+            Command::none(),
+        )
     }
 
     fn title(&self) -> String {
