@@ -12,6 +12,19 @@ pub enum Message {
     Command(Command<Message>),
 }
 
+impl Clone for Message {
+    fn clone(&self) -> Self {
+        match self {
+            Message::Close => Message::Close,
+            Message::Mimimize => Message::Mimimize,
+            Message::Maximize => Message::Maximize,
+            Message::Event(event) => Message::Event(event.clone()),
+            Message::Tick(tick) => Message::Tick(*tick),
+            Message::Command(_) => todo!(),
+        }
+    }
+}
+
 unsafe impl Send for Message {}
 unsafe impl Sync for Message {}
 
@@ -33,29 +46,7 @@ impl Message {
                     iced_native::window::Action::Maximize(true),
                 ))
             }
-            Message::Event(event) => match event {
-                iced::Event::Mouse(mouse) => {
-                    println!("Mouse: {mouse:?}");
-                    match mouse {
-                        iced::mouse::Event::CursorMoved { position } => {
-                            app.mouse_last_position = app.mouse_position;
-                            app.mouse_position = position;
-                        }
-                        iced::mouse::Event::ButtonPressed(button) => match button {
-                            Button::Left => {
-                                // if app.mouse_position.y <= 40.0 {
-                                //     return iced::window::drag();
-                                // }
-                            }
-                            Button::Right => {}
-                            Button::Middle => {}
-                            Button::Other(_) => {}
-                        },
-                        _ => {}
-                    };
-                }
-                _ => {}
-            },
+            Message::Event(_event) => {}
             Message::Tick(_) => {}
             Message::Command(command) => return command,
         };
