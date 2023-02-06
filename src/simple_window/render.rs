@@ -3,7 +3,10 @@ use iced::{
     Element, Padding,
 };
 use iced_native::widget::container;
-use muzzman_iced::themes::{ButtonStyle, ContainerStyle, ProgressBarStyle, TextInputStyle};
+use muzzman_iced::{
+    themes::{ButtonStyle, ContainerStyle, ProgressBarStyle, TextInputStyle},
+    widgets::top_bar::TopBar,
+};
 
 use crate::{logic::Message, MuzzManSimple};
 
@@ -77,11 +80,12 @@ impl MuzzManSimple {
 
             let top_bar = iced::widget::column(vec![top_bar.into()]).width(iced::Length::Fill);
 
-            container(top_bar)
+            let content = container(top_bar)
                 .width(iced::Length::Fill)
                 .style(ContainerStyle::Bar)
                 .height(iced::Length::Units(40))
-                .center_y()
+                .center_y();
+            TopBar::new(content, Message::Command)
         };
 
         //

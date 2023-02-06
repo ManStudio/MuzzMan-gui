@@ -4,7 +4,7 @@ use muzzman_daemon::prelude::{TElement, TLocation};
 
 use crate::MuzzManSimple;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Message {
     Close,
     Minimize,
@@ -14,6 +14,26 @@ pub enum Message {
     DownloadOrStop,
     Event(iced::Event),
     Tick(iced::time::Instant),
+    Command(Command<Message>),
+}
+
+unsafe impl Sync for Message {}
+unsafe impl Send for Message {}
+
+impl Clone for Message {
+    fn clone(&self) -> Self {
+        match self {
+            Message::Close => Message::Close,
+            Message::Minimize => Message::Minimize,
+            Message::Settings => Message::Settings,
+            Message::Morph => Message::Morph,
+            Message::ChangeUrl(url) => Message::ChangeUrl(url.clone()),
+            Message::DownloadOrStop => Message::DownloadOrStop,
+            Message::Event(event) => Message::Event(event.clone()),
+            Message::Tick(tick) => Message::Tick(*tick),
+            Message::Command(_) => todo!(),
+        }
+    }
 }
 
 impl Message {
@@ -59,14 +79,7 @@ impl Message {
                     }
                 }
             }
-            Message::Event(event) => {
-                if let iced::Event::Mouse(iced::mouse::Event::ButtonPressed(
-                    iced::mouse::Button::Left,
-                )) = event
-                {
-                    return Command::single(Action::Window(window::Action::Drag));
-                }
-            }
+            Message::Event(_event) => {}
             Message::Tick(_) => {
                 if let Some(element) = &app.element {
                     match element.get_status_msg() {
@@ -90,6 +103,7 @@ impl Message {
             }
             Message::Settings => todo!(),
             Message::Morph => todo!(),
+            Message::Command(command) => return command,
         }
         Command::none()
     }
