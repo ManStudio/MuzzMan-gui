@@ -5,7 +5,7 @@ use iced::{
 use iced_native::widget::container;
 use muzzman_iced::{
     themes::{ButtonStyle, ContainerStyle, ProgressBarStyle, TextInputStyle},
-    widgets::top_bar::TopBar,
+    widgets::{progress_bar::ProgressBar, top_bar::TopBar},
 };
 
 use crate::{logic::Message, MuzzManSimple};
@@ -37,18 +37,20 @@ impl MuzzManSimple {
                 .height(iced::Length::Units(38))
                 .style(ButtonStyle::Flat.into());
 
-            let progress_top_bar = progress_bar(0.0..=1.0, self.progress)
-                .width(iced::Length::Fill)
-                .style(ProgressBarStyle::Normal);
-            let progress_top_bar = iced::widget::column(vec![progress_top_bar.into()])
-                .padding(Padding {
-                    top: 5,
-                    right: 0,
-                    bottom: 0,
-                    left: 5,
-                })
-                .width(iced::Length::Fill)
-                .height(iced::Length::Fill);
+            // let progress_top_bar = progress_bar(0.0..=1.0, self.progress)
+            //     .width(iced::Length::Fill)
+            //     .style(ProgressBarStyle::Normal);
+            // let progress_top_bar = iced::widget::column(vec![progress_top_bar.into()])
+            //     .padding(Padding {
+            //         top: 5,
+            //         right: 0,
+            //         bottom: 0,
+            //         left: 5,
+            //     })
+            //     .width(iced::Length::Fill)
+            //     .height(iced::Length::Fill);
+
+            let progress_bar = ProgressBar::new(self.progress, Message::Command);
 
             let mimimize_icon_bytes = include_bytes!("../../Minimize Button.svg");
             let mimimize_icon = iced_native::svg::Handle::from_memory(&mimimize_icon_bytes[..]);
@@ -73,7 +75,7 @@ impl MuzzManSimple {
             let top_bar = iced::widget::row(vec![
                 settings_button.into(),
                 morph_button.into(),
-                progress_top_bar.into(),
+                progress_bar.into(),
                 mimimize_button.into(),
                 close_button.into(),
             ]);

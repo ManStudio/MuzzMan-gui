@@ -97,7 +97,7 @@ impl Message {
                         app.downloading = false;
                     }
                 } else {
-                    app.progress = 0.0;
+                    app.progress = 1.0;
                     app.downloading = false;
                 }
             }
