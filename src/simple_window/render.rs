@@ -37,19 +37,6 @@ impl MuzzManSimple {
                 .height(iced::Length::Units(38))
                 .style(ButtonStyle::Flat.into());
 
-            // let progress_top_bar = progress_bar(0.0..=1.0, self.progress)
-            //     .width(iced::Length::Fill)
-            //     .style(ProgressBarStyle::Normal);
-            // let progress_top_bar = iced::widget::column(vec![progress_top_bar.into()])
-            //     .padding(Padding {
-            //         top: 5,
-            //         right: 0,
-            //         bottom: 0,
-            //         left: 5,
-            //     })
-            //     .width(iced::Length::Fill)
-            //     .height(iced::Length::Fill);
-
             let progress_bar = ProgressBar::new(self.progress, Message::Command);
 
             let mimimize_icon_bytes = include_bytes!("../../Minimize Button.svg");
