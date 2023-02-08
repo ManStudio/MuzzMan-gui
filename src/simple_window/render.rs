@@ -37,7 +37,7 @@ impl MuzzManSimple {
                 .height(iced::Length::Units(38))
                 .style(ButtonStyle::Flat.into());
 
-            let progress_bar = ProgressBar::new(self.progress, Message::Command);
+            let progress_bar = ProgressBar::new(self.progress).on_right(Message::OpenProgress);
 
             let mimimize_icon_bytes = include_bytes!("../../Minimize Button.svg");
             let mimimize_icon = iced_native::svg::Handle::from_memory(&mimimize_icon_bytes[..]);

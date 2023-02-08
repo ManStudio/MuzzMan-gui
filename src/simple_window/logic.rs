@@ -10,6 +10,7 @@ pub enum Message {
     Minimize,
     Settings,
     Morph,
+    OpenProgress,
     ChangeUrl(String),
     DownloadOrStop,
     Event(iced::Event),
@@ -31,6 +32,7 @@ impl Clone for Message {
             Message::DownloadOrStop => Message::DownloadOrStop,
             Message::Event(event) => Message::Event(event.clone()),
             Message::Tick(tick) => Message::Tick(*tick),
+            Message::OpenProgress => Message::OpenProgress,
             Message::Command(_) => todo!(),
         }
     }
@@ -97,12 +99,13 @@ impl Message {
                         app.downloading = false;
                     }
                 } else {
-                    app.progress = 1.0;
+                    app.progress = 0.0;
                     app.downloading = false;
                 }
             }
             Message::Settings => todo!(),
             Message::Morph => todo!(),
+            Message::OpenProgress => todo!(),
             Message::Command(command) => return command,
         }
         Command::none()

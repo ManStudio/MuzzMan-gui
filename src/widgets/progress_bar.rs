@@ -3,26 +3,28 @@ use iced_native::Widget;
 
 use crate::themes::Colors;
 
-pub struct ProgressBar<'a, Message> {
+pub struct ProgressBar<Message> {
     pub progress: f32,
-    pub on_command: Box<dyn Fn(Command<Message>) -> Message + 'a>,
     pub on_right: Option<Message>,
 }
 
-impl<'a, Message> ProgressBar<'a, Message> {
-    pub fn new<F>(progress: f32, on_command: F) -> Self
-    where
-        F: 'a + Fn(Command<Message>) -> Message,
-    {
+impl<Message> ProgressBar<Message> {
+    pub fn new(progress: f32) -> Self {
         Self {
             progress,
-            on_command: Box::new(on_command),
             on_right: None,
+        }
+    }
+
+    pub fn on_right(self, on_right: Message) -> Self {
+        Self {
+            progress: self.progress,
+            on_right: Some(on_right),
         }
     }
 }
 
-impl<'a, Message, Renderer> Widget<Message, Renderer> for ProgressBar<'a, Message>
+impl<Message, Renderer> Widget<Message, Renderer> for ProgressBar<Message>
 where
     Renderer: iced_native::text::Renderer,
     Message: Clone,
@@ -99,14 +101,49 @@ where
             vertical_alignment: iced::alignment::Vertical::Center,
         });
     }
+
+    fn on_event(
+        &mut self,
+        _state: &mut iced_native::widget::Tree,
+        event: iced::Event,
+        layout: iced_native::Layout<'_>,
+        cursor_position: iced::Point,
+        _renderer: &Renderer,
+        _clipboard: &mut dyn iced_native::Clipboard,
+        shell: &mut iced_native::Shell<'_, Message>,
+    ) -> iced::event::Status {
+        if layout.bounds().contains(cursor_position) {
+            if let iced::Event::Mouse(iced::mouse::Event::ButtonReleased(
+                iced::mouse::Button::Right,
+            )) = event
+            {
+                if let Some(message) = &self.on_right {
+                    shell.publish(message.clone());
+                    return iced::event::Status::Captured;
+                }
+            }
+        }
+        iced::event::Status::Ignored
+    }
+
+    fn mouse_interaction(
+        &self,
+        _state: &iced_native::widget::Tree,
+        layout: iced_native::Layout<'_>,
+        cursor_position: iced::Point,
+        _viewport: &iced::Rectangle,
+        _renderer: &Renderer,
+    ) -> iced_native::mouse::Interaction {
+        iced_native::mouse::Interaction::Idle
+    }
 }
 
-impl<'a, Message, Renderer> From<ProgressBar<'a, Message>> for Element<'a, Message, Renderer>
+impl<'a, Message, Renderer> From<ProgressBar<Message>> for Element<'a, Message, Renderer>
 where
     Renderer: 'a + iced_native::text::Renderer,
     Message: 'a + Clone,
 {
-    fn from(value: ProgressBar<'a, Message>) -> Self {
+    fn from(value: ProgressBar<Message>) -> Self {
         Element::new(value)
     }
 }
