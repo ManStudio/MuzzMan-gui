@@ -7,21 +7,25 @@ edition = "2021"
 
 [[bin]]
 name = "simple"
-path = "./src/simple_window/main.rs"
+path = "./bin/simple_window/main.rs"
 [[bin]]
 name = "simple_settings"
-path = "./src/simple_settings_window/main.rs"
+path = "./bin/simple_settings_window/main.rs"
 
 [[bin]]
 name = "progress"
-path = "./src/progress_window/main.rs"
+path = "./bin/progress_window/main.rs"
 
 [[bin]]
 name = "manager"
-path = "./src/manager_window/main.rs"
+path = "./bin/manager_window/main.rs"
 [[bin]]
 name = "settings"
-path = "./src/settings_window/main.rs"
+path = "./bin/settings_window/main.rs"
+
+[[bin]]
+name = "installer"
+path = "./bin/installer/main.rs"
 
 [dependencies]
 clap = { version = "4.1.4", features = ["derive"] }
