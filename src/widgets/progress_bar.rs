@@ -6,6 +6,9 @@ use crate::themes::Colors;
 pub struct ProgressBar<Message> {
     pub progress: f32,
     pub on_right: Option<Message>,
+
+    pub height: iced::Length,
+    pub width: iced::Length,
 }
 
 impl<Message> ProgressBar<Message> {
@@ -13,14 +16,24 @@ impl<Message> ProgressBar<Message> {
         Self {
             progress,
             on_right: None,
+            height: iced::Length::Fill,
+            width: iced::Length::Fill,
         }
     }
 
     pub fn on_right(self, on_right: Message) -> Self {
         Self {
-            progress: self.progress,
             on_right: Some(on_right),
+            ..self
         }
+    }
+
+    pub fn width(self, width: iced::Length) -> Self {
+        Self { width, ..self }
+    }
+
+    pub fn height(self, height: iced::Length) -> Self {
+        Self { height, ..self }
     }
 }
 
@@ -30,11 +43,11 @@ where
     Message: Clone,
 {
     fn width(&self) -> iced::Length {
-        iced::Length::Fill
+        self.width
     }
 
     fn height(&self) -> iced::Length {
-        iced::Length::Fill
+        self.height
     }
 
     fn layout(

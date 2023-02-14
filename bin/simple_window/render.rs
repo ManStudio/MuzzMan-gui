@@ -1,6 +1,6 @@
 use iced::{
     widget::{button, horizontal_space, progress_bar, svg, text, text_input, vertical_space},
-    Element, Padding,
+    Alignment, Color, Element, Padding,
 };
 use iced_native::widget::container;
 use muzzman_iced::{
@@ -23,8 +23,7 @@ impl MuzzManSimple {
 
             let settings_button = button(settings_svg)
                 .on_press(Message::Settings)
-                .width(iced::Length::Units(38))
-                .height(iced::Length::Units(38))
+                .padding(0)
                 .style(ButtonStyle::Flat.into());
 
             let morph_icon_bytes = include_bytes!("../../Morph.svg");
@@ -33,8 +32,7 @@ impl MuzzManSimple {
 
             let morph_button = button(morph_svg)
                 .on_press(Message::Morph)
-                .width(iced::Length::Units(38))
-                .height(iced::Length::Units(38))
+                .padding(0)
                 .style(ButtonStyle::Flat.into());
 
             let progress_bar = ProgressBar::new(self.progress).on_right(Message::OpenProgress);
@@ -45,8 +43,7 @@ impl MuzzManSimple {
 
             let mimimize_button = button(mimimize_svg)
                 .on_press(Message::Minimize)
-                .width(iced::Length::Units(38))
-                .height(iced::Length::Units(38))
+                .padding(0)
                 .style(ButtonStyle::Flat.into());
 
             let close_icon_bytes = include_bytes!("../../Close Button.svg");
@@ -55,8 +52,7 @@ impl MuzzManSimple {
 
             let close_button = button(close_svg)
                 .on_press(Message::Close)
-                .width(iced::Length::Units(38))
-                .height(iced::Length::Units(38))
+                .padding(0)
                 .style(ButtonStyle::Flat.into());
 
             let top_bar = iced::widget::row(vec![
@@ -65,15 +61,16 @@ impl MuzzManSimple {
                 progress_bar.into(),
                 mimimize_button.into(),
                 close_button.into(),
-            ]);
-
-            let top_bar = iced::widget::column(vec![top_bar.into()]).width(iced::Length::Fill);
+            ])
+            .height(iced::Length::Fill)
+            .padding(3)
+            .spacing(5)
+            .align_items(Alignment::Center);
 
             let content = container(top_bar)
                 .width(iced::Length::Fill)
                 .style(ContainerStyle::Bar)
-                .height(iced::Length::Units(40))
-                .center_y();
+                .height(iced::Length::Units(40));
             TopBar::new(content, Message::Command)
         };
 
@@ -115,6 +112,17 @@ impl MuzzManSimple {
             vertical_space(iced::Length::Fill).into(),
             footer.into(),
         ]);
-        container(raws).into()
+
+        let coutainer: iced::Element<Message, iced::Renderer<iced::Theme>> = container(raws).into();
+
+        // Debug layout
+        // let coutainer = coutainer.explain(Color {
+        //     r: 0.9,
+        //     g: 0.9,
+        //     b: 0.9,
+        //     a: 1.0,
+        // });
+
+        coutainer
     }
 }
