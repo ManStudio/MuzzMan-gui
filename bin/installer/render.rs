@@ -37,7 +37,28 @@ impl MuzzManInstaller {
             TopBar::new(top_bar, Message::Command)
         };
 
-        let body = { container(text("Body")).height(iced::Length::Fill) };
+        let body = {
+            container(
+                column(vec![
+                    text(&self.output_log)
+                        .height(iced::Length::Fill)
+                        .width(iced::Length::Fill)
+                        .into(),
+                    column(vec![row(vec![
+                        button("Install").on_press(Message::Install).into(),
+                        button("UnInstall").on_press(Message::UnInstall).into(),
+                    ])
+                    .into()])
+                    .width(iced::Length::Fill)
+                    .align_items(iced::Alignment::Center)
+                    .into(),
+                ])
+                .height(iced::Length::Fill)
+                .width(iced::Length::Fill),
+            )
+            .height(iced::Length::Fill)
+            .width(iced::Length::Fill)
+        };
 
         let status_bar = {
             container(text("Status Bar"))
@@ -48,8 +69,11 @@ impl MuzzManInstaller {
                 .height(iced::Length::Units(30))
         };
 
-        container(column(vec![top_bar.into(), body.into(), status_bar.into()]))
-            .style(ContainerStyle::Background)
-            .into()
+        let content: iced::Element<Message, iced::Renderer<iced::Theme>> =
+            container(column(vec![top_bar.into(), body.into(), status_bar.into()]))
+                .style(ContainerStyle::Background)
+                .into();
+
+        content.explain(iced::Color::from_rgb(0.9, 0.9, 0.9))
     }
 }

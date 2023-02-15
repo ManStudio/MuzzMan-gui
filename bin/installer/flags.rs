@@ -12,6 +12,8 @@ pub enum Command {
 pub struct Flags {
     #[command(subcommand)]
     pub command: Option<Command>,
+    #[arg(short, long)]
+    pub local: bool,
 }
 
 impl Default for Flags {
