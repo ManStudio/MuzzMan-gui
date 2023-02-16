@@ -1,12 +1,16 @@
+use std::pin::Pin;
+
 use iced::{Application, Command};
 
-use crate::{flags::Flags, logic::Message};
+use crate::{flags::Flags, install::Installer, logger::Logger, logic::Message};
 
 pub struct MuzzManInstaller {
     // this means that is the full repo with all the application and src
     // if is false will be downloaded from the internet
     pub local: bool,
     pub output_log: String,
+    pub log_reciver: std::sync::mpsc::Receiver<String>,
+    pub installer: Installer,
 }
 
 impl Application for MuzzManInstaller {
@@ -32,10 +36,25 @@ impl Application for MuzzManInstaller {
             Command::none()
         };
 
+        let (log_sender, log_reciver) = std::sync::mpsc::channel::<String>();
+
+        let mut installer = Installer::new(log_sender);
+        installer.add_step(
+            |channel| {
+                Box::pin(async {
+                    let logger = Logger::new("Testing", channel);
+                    logger.log("Finished!")
+                })
+            },
+            vec![],
+        );
+
         (
             Self {
                 local: flags.local,
                 output_log: "First Log".into(),
+                installer,
+                log_reciver,
             },
             command,
         )

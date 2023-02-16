@@ -4,8 +4,11 @@ use iced::Application;
 
 mod application;
 mod flags;
+mod install;
+mod logger;
 mod logic;
 mod render;
+
 fn main() {
     let flags = Flags::default();
 

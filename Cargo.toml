@@ -28,6 +28,7 @@ name = "installer"
 path = "./bin/installer/main.rs"
 
 [dependencies]
+async-trait = "0.1.64"
 clap = { version = "4.1.4", features = ["derive"] }
 env_logger = "0.10.0"
 # iced = {version = "0.7.0", features = ["svg", "debug", "image", "canvas"]}
