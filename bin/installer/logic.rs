@@ -65,7 +65,7 @@ impl Message {
         if app.auto_scroll {
             commands.push(iced::widget::scrollable::snap_to(
                 app.output_scroll_id.clone(),
-                iced::widget::scrollable::RelativeOffset::END,
+                iced::widget::scrollable::RelativeOffset { y: 1.0, x: 0.0 },
             ));
         }
         match self {
