@@ -9,7 +9,8 @@ pub struct MuzzManInstaller {
     // if is false will be downloaded from the internet
     pub local: bool,
     pub output_log: String,
-    pub log_reciver: std::sync::mpsc::Receiver<String>,
+    pub section_log: String,
+    pub log_reciver: std::sync::mpsc::Receiver<(String, String)>,
     pub installer: TaskManager,
     pub should_close: bool,
     pub output_scroll_id: iced::widget::scrollable::Id,
@@ -37,7 +38,7 @@ impl Application for MuzzManInstaller {
             Command::none()
         };
 
-        let (log_sender, log_reciver) = std::sync::mpsc::channel::<String>();
+        let (log_sender, log_reciver) = std::sync::mpsc::channel::<(String, String)>();
 
         let installer = TaskManager::new(log_sender);
 
@@ -50,6 +51,7 @@ impl Application for MuzzManInstaller {
                 should_close: false,
                 output_scroll_id: iced::widget::scrollable::Id::unique(),
                 auto_scroll: true,
+                section_log: String::new(),
             },
             command,
         )

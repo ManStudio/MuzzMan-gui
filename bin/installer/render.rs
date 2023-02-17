@@ -1,5 +1,6 @@
 use iced::widget::{
-    button, column, container, horizontal_space, row, scrollable, svg, text, vertical_space,
+    button, checkbox, column, container, horizontal_space, row, scrollable, svg, text,
+    vertical_space,
 };
 use muzzman_iced::{
     themes::{ButtonStyle, ContainerStyle},
@@ -48,8 +49,14 @@ impl MuzzManInstaller {
         let body = {
             container(
                 column(vec![scrollable(
-                    text(&self.output_log).width(iced::Length::Fill),
+                    row(vec![
+                        text(&self.section_log).into(),
+                        text(&self.output_log).into(),
+                    ])
+                    .spacing(20)
+                    .padding(10),
                 )
+                .horizontal_scroll(iced::widget::scrollable::Properties::default())
                 .id(self.output_scroll_id.clone())
                 .height(iced::Length::Fill)
                 .into()])
@@ -67,7 +74,7 @@ impl MuzzManInstaller {
         } else {
             // buttons.push(button("Stop").into())
         }
-
+        buttons.push(checkbox("AutoScroll", self.auto_scroll, Message::ChangeAutoScroll).into());
         let status_bar = {
             container(
                 column(vec![row(buttons).spacing(5).into()])

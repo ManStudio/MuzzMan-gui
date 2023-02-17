@@ -1,0 +1,11 @@
+"Test1"
+"Test2"
+"Test3\nTest3.5"
+"Test4\rTest4.5"
+"Test5\r\nTest5.5"
+"Test6\n\rTest6.5"
+"Test7vTest7.5"
+"Test8\u{15}Test8.5"
+"Test9\tTest9.5"
+"Test10\u{1e}Test10.5"
+Task finished: 0

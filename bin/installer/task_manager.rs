@@ -4,7 +4,7 @@ use async_trait::async_trait;
 
 use crate::{logger::Logger, logic::Message};
 
-pub type Channel = std::sync::mpsc::Sender<String>;
+pub type Channel = std::sync::mpsc::Sender<(String, String)>;
 
 pub struct TaskManager {
     pub steps: Vec<(
@@ -12,7 +12,7 @@ pub struct TaskManager {
         Vec<usize>,
     )>,
     pub to_do: Vec<(usize, bool)>,
-    pub channel: std::sync::mpsc::Sender<String>,
+    pub channel: Channel,
 }
 
 impl TaskManager {

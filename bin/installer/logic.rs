@@ -12,6 +12,7 @@ pub enum Message {
     Install,
     UnInstall,
     TaskFinished(usize),
+    ChangeAutoScroll(bool),
     Tick(iced::time::Instant),
 }
 
@@ -27,6 +28,7 @@ impl Clone for Message {
             Message::Install => Self::Install,
             Message::UnInstall => Self::UnInstall,
             Message::TaskFinished(task) => Self::TaskFinished(task.clone()),
+            Message::ChangeAutoScroll(value) => Self::ChangeAutoScroll(*value),
             Message::Command(_) => todo!(),
         }
     }
@@ -34,10 +36,23 @@ impl Clone for Message {
 
 impl MuzzManInstaller {
     pub fn process_logs(&mut self) {
-        loop {
-            match self.log_reciver.try_recv() {
-                Ok(msg) => self.output_log.push_str(&msg),
-                _ => break,
+        let mut tmsg = self.log_reciver.try_recv();
+        while tmsg.is_ok() {
+            if let Ok(mut msg) = tmsg {
+                tmsg = self.log_reciver.try_recv();
+                msg.1.push('\n');
+                let msgs = msg.1.split(['\n', '\r']).collect::<Vec<&str>>();
+                let section = &msg.0;
+                for msg in msgs {
+                    if msg.is_empty() {
+                        continue;
+                    }
+                    self.section_log.push_str(section);
+                    self.section_log.push('\n');
+
+                    self.output_log.push_str(msg);
+                    self.output_log.push('\n');
+                }
             }
         }
     }
@@ -75,10 +90,11 @@ impl Message {
             Message::TaskFinished(task) => {
                 println!("Task finished: {task}");
                 commands.push(app.installer.finished(task));
-                if app.installer.to_do.is_empty() {
+                if app.should_close && app.installer.to_do.is_empty() {
                     commands.push(iced::window::close());
                 }
             }
+            Message::ChangeAutoScroll(value) => app.auto_scroll = value,
         }
         Command::batch(commands)
     }
