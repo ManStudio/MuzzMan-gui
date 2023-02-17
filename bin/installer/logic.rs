@@ -1,6 +1,6 @@
 use iced::Command;
 
-use crate::application::MuzzManInstaller;
+use crate::{application::MuzzManInstaller, logger::Logger, task_manager::TaskManager};
 
 #[derive(Debug)]
 pub enum Message {
@@ -61,4 +61,17 @@ impl Message {
         }
         Command::none()
     }
+}
+
+pub fn install_tasks(manager: &mut TaskManager) {
+    manager.clear();
+
+    let rust_up = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("Install RustUp", channel);
+            })
+        },
+        vec![],
+    );
 }

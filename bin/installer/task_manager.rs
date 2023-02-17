@@ -6,7 +6,7 @@ use crate::{logger::Logger, logic::Message};
 
 pub type Channel = std::sync::mpsc::Sender<String>;
 
-pub struct Installer {
+pub struct TaskManager {
     pub steps: Vec<(
         Box<dyn Fn(Channel) -> Pin<Box<dyn Future<Output = ()> + Send>>>,
         Vec<usize>,
@@ -15,7 +15,7 @@ pub struct Installer {
     pub channel: std::sync::mpsc::Sender<String>,
 }
 
-impl Installer {
+impl TaskManager {
     pub fn new(log_sender: Channel) -> Self {
         Self {
             channel: log_sender,
@@ -31,6 +31,11 @@ impl Installer {
         let id = self.steps.len();
         self.steps.push((Box::new(step), depends_on.into()));
         id
+    }
+
+    pub fn clear(&mut self) {
+        self.to_do.clear();
+        self.steps.clear();
     }
 
     pub fn arm(&mut self) {

@@ -4,10 +4,13 @@ use iced::Application;
 
 mod application;
 mod flags;
-mod install;
 mod logger;
 mod logic;
 mod render;
+mod task_manager;
+
+#[cfg(target_os = "linux")]
+mod package_managment;
 
 fn main() {
     let flags = Flags::default();

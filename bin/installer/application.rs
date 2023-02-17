@@ -2,7 +2,7 @@ use std::pin::Pin;
 
 use iced::{Application, Command};
 
-use crate::{flags::Flags, install::Installer, logger::Logger, logic::Message};
+use crate::{flags::Flags, logger::Logger, logic::Message, task_manager::TaskManager};
 
 pub struct MuzzManInstaller {
     // this means that is the full repo with all the application and src
@@ -10,7 +10,7 @@ pub struct MuzzManInstaller {
     pub local: bool,
     pub output_log: String,
     pub log_reciver: std::sync::mpsc::Receiver<String>,
-    pub installer: Installer,
+    pub installer: TaskManager,
 }
 
 impl Application for MuzzManInstaller {
@@ -25,11 +25,9 @@ impl Application for MuzzManInstaller {
     fn new(flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
         let command = if let Some(command) = flags.command {
             match command {
-                crate::flags::Command::Install => {
-                    Command::perform(do_nothing(), |_| Message::Install)
-                }
+                crate::flags::Command::Install => Command::perform(async {}, |_| Message::Install),
                 crate::flags::Command::Uninstall => {
-                    Command::perform(do_nothing(), |_| Message::UnInstall)
+                    Command::perform(async {}, |_| Message::UnInstall)
                 }
             }
         } else {
@@ -38,7 +36,7 @@ impl Application for MuzzManInstaller {
 
         let (log_sender, log_reciver) = std::sync::mpsc::channel::<String>();
 
-        let mut installer = Installer::new(log_sender);
+        let mut installer = TaskManager::new(log_sender);
         installer.add_step(
             |channel| {
                 Box::pin(async {
@@ -72,6 +70,3 @@ impl Application for MuzzManInstaller {
         self.render()
     }
 }
-
-// this is needed becaus in current version of rust cannot create async clasure
-pub async fn do_nothing() {}
