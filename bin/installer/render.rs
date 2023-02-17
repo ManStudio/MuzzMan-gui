@@ -3,7 +3,7 @@ use iced::widget::{
 };
 use muzzman_iced::{
     themes::{ButtonStyle, ContainerStyle},
-    widgets::top_bar::TopBar,
+    widgets::{progress_bar::ProgressBar, top_bar::TopBar},
 };
 
 use crate::{application::MuzzManInstaller, logic::Message};
@@ -17,8 +17,7 @@ impl MuzzManInstaller {
 
             let mimimize_button = button(mimimize_svg)
                 .on_press(Message::Mimimize)
-                .width(iced::Length::Units(38))
-                .height(iced::Length::Units(38))
+                .padding(0)
                 .style(ButtonStyle::Flat.into());
 
             let close_icon_bytes = include_bytes!("../../Close Button.svg");
@@ -26,34 +25,34 @@ impl MuzzManInstaller {
             let close_svg = svg(close_icon);
 
             let close_button = button(close_svg)
-                .on_press(Message::Close)
-                .width(iced::Length::Units(38))
-                .height(iced::Length::Units(38))
-                .style(ButtonStyle::Flat.into());
+                .padding(0)
+                .style(ButtonStyle::Flat.into())
+                .on_press(Message::Close);
 
-            let top_bar = container(row(vec![
-                horizontal_space(iced::Length::Fill).into(),
-                mimimize_button.into(),
-                close_button.into(),
-            ]));
+            let progress_bar = ProgressBar::new(
+                (self.installer.steps.len() as f32 - self.installer.to_do.len() as f32)
+                    / self.installer.steps.len() as f32,
+            );
+
+            let mut buttons = vec![progress_bar.into(), mimimize_button.into()];
+
+            if !self.should_close {
+                buttons.push(close_button.into())
+            }
+
+            let top_bar =
+                container(row(buttons).padding(5).spacing(3)).height(iced::Length::Units(40));
             TopBar::new(top_bar, Message::Command)
         };
 
         let body = {
             container(
-                column(vec![
-                    scrollable(text(&self.output_log).width(iced::Length::Fill))
-                        .height(iced::Length::Fill)
-                        .into(),
-                    column(vec![row(vec![
-                        button("Install").on_press(Message::Install).into(),
-                        button("UnInstall").on_press(Message::UnInstall).into(),
-                    ])
-                    .into()])
-                    .width(iced::Length::Fill)
-                    .align_items(iced::Alignment::Center)
-                    .into(),
-                ])
+                column(vec![scrollable(
+                    text(&self.output_log).width(iced::Length::Fill),
+                )
+                .id(self.output_scroll_id.clone())
+                .height(iced::Length::Fill)
+                .into()])
                 .height(iced::Length::Fill)
                 .width(iced::Length::Fill),
             )
@@ -61,13 +60,25 @@ impl MuzzManInstaller {
             .width(iced::Length::Fill)
         };
 
+        let mut buttons = Vec::new();
+        if self.installer.to_do.is_empty() {
+            buttons.push(button("Install").on_press(Message::Install).into());
+            buttons.push(button("UnInstall").on_press(Message::UnInstall).into())
+        } else {
+            // buttons.push(button("Stop").into())
+        }
+
         let status_bar = {
-            container(text("Status Bar"))
-                .style(ContainerStyle::Bar)
-                .center_x()
-                .center_y()
-                .width(iced::Length::Fill)
-                .height(iced::Length::Units(30))
+            container(
+                column(vec![row(buttons).spacing(5).into()])
+                    .width(iced::Length::Fill)
+                    .align_items(iced::Alignment::Center),
+            )
+            .style(ContainerStyle::Bar)
+            .center_x()
+            .center_y()
+            .width(iced::Length::Fill)
+            .height(iced::Length::Units(30))
         };
 
         let content: iced::Element<Message, iced::Renderer<iced::Theme>> =

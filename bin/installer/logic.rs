@@ -45,15 +45,28 @@ impl MuzzManInstaller {
 
 impl Message {
     pub fn process(self, app: &mut MuzzManInstaller) -> Command<Message> {
+        let mut commands = Vec::new();
         app.process_logs();
+        if app.auto_scroll {
+            commands.push(iced::widget::scrollable::snap_to(
+                app.output_scroll_id.clone(),
+                iced::widget::scrollable::RelativeOffset::END,
+            ));
+        }
         match self {
-            Message::Command(command) => return command,
-            Message::Close => return iced::window::close(),
-            Message::Mimimize => return iced::window::minimize(true),
+            Message::Command(command) => commands.push(command),
+            Message::Close => {
+                if app.installer.to_do.is_empty() {
+                    commands.push(iced::window::close());
+                } else {
+                    app.should_close = true;
+                }
+            }
+            Message::Mimimize => commands.push(iced::window::minimize(true)),
             Message::Install => {
                 install_tasks(&mut app.installer);
                 app.installer.arm();
-                return app.installer.process();
+                commands.push(app.installer.process());
             }
             Message::UnInstall => {
                 todo!("The UnInstallProcess is not implemented");
@@ -61,10 +74,13 @@ impl Message {
             Message::Tick(_) => {}
             Message::TaskFinished(task) => {
                 println!("Task finished: {task}");
-                return app.installer.finished(task);
+                commands.push(app.installer.finished(task));
+                if app.installer.to_do.is_empty() {
+                    commands.push(iced::window::close());
+                }
             }
         }
-        Command::none()
+        Command::batch(commands)
     }
 }
 
@@ -95,38 +111,7 @@ pub fn install_tasks(manager: &mut TaskManager) {
         |channel| {
             Box::pin(async {
                 let logger = Logger::new("Rust Update", channel);
-                let mut process = std::process::Command::new("rustup")
-                    .arg("update")
-                    .stdout(std::process::Stdio::piped())
-                    .stderr(std::process::Stdio::piped())
-                    .spawn()
-                    .expect("rustup is not installed!");
-                let stdout = process.stdout.take().unwrap();
-                let stderr = process.stderr.take().unwrap();
-                let stdout_reader = BufReader::new(stdout);
-                let stderr_reader = BufReader::new(stderr);
-
-                let logger_1 = logger.clone();
-                let logger_2 = logger.clone();
-
-                let t1 = std::thread::spawn(move || {
-                    stdout_reader.lines().for_each(|line| {
-                        if let Ok(line) = line {
-                            logger_1.log(line)
-                        }
-                    })
-                });
-
-                let t2 = std::thread::spawn(move || {
-                    stderr_reader.lines().for_each(|line| {
-                        if let Ok(line) = line {
-                            logger_2.log(line)
-                        }
-                    })
-                });
-
-                let _ = t1.join();
-                let _ = t2.join();
+                execute_command(std::process::Command::new("rustup").arg("update"), &logger);
                 logger.log("Finished!");
             })
         },
@@ -137,9 +122,66 @@ pub fn install_tasks(manager: &mut TaskManager) {
         |channel| {
             Box::pin(async {
                 let logger = Logger::new("Rust stable toolchain", channel);
-                logger.log("Install Stable");
+                execute_command(
+                    std::process::Command::new("rustup")
+                        .arg("install")
+                        .arg("stable"),
+                    &logger,
+                );
+                logger.log("Finished");
             })
         },
-        vec![rust_up],
+        vec![update_rust],
     );
+
+    let build = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("build", channel);
+                execute_command(
+                    std::process::Command::new("cargo")
+                        .arg("build")
+                        .arg("--release"),
+                    &logger,
+                );
+                logger.log("Builded!");
+            })
+        },
+        vec![install_stable],
+    );
+}
+
+pub fn execute_command(command: &mut std::process::Command, logger: &Logger) {
+    let mut process = command
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("Invalid Command!");
+
+    let stdout = process.stdout.take().unwrap();
+    let stderr = process.stderr.take().unwrap();
+    let stdout_reader = BufReader::new(stdout);
+    let stderr_reader = BufReader::new(stderr);
+
+    let logger_1 = logger.clone();
+    let logger_2 = logger.clone();
+
+    let t1 = std::thread::spawn(move || {
+        stdout_reader.lines().for_each(|line| {
+            if let Ok(line) = line {
+                logger_1.log(line)
+            }
+        })
+    });
+
+    let t2 = std::thread::spawn(move || {
+        stderr_reader.lines().for_each(|line| {
+            if let Ok(line) = line {
+                logger_2.log(line)
+            }
+        })
+    });
+
+    let _ = t1.join();
+    let _ = t2.join();
 }

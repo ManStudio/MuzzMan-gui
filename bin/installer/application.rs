@@ -11,6 +11,9 @@ pub struct MuzzManInstaller {
     pub output_log: String,
     pub log_reciver: std::sync::mpsc::Receiver<String>,
     pub installer: TaskManager,
+    pub should_close: bool,
+    pub output_scroll_id: iced::widget::scrollable::Id,
+    pub auto_scroll: bool,
 }
 
 impl Application for MuzzManInstaller {
@@ -41,9 +44,12 @@ impl Application for MuzzManInstaller {
         (
             Self {
                 local: flags.local,
-                output_log: "First Log".into(),
+                output_log: String::new(),
                 installer,
                 log_reciver,
+                should_close: false,
+                output_scroll_id: iced::widget::scrollable::Id::unique(),
+                auto_scroll: true,
             },
             command,
         )
@@ -59,5 +65,9 @@ impl Application for MuzzManInstaller {
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Renderer<Self::Theme>> {
         self.render()
+    }
+
+    fn subscription(&self) -> iced::Subscription<Self::Message> {
+        iced::time::every(iced::time::Duration::from_millis(30)).map(Message::Tick)
     }
 }
