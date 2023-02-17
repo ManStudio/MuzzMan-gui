@@ -1,4 +1,6 @@
-use iced::widget::{button, column, container, horizontal_space, row, svg, text, vertical_space};
+use iced::widget::{
+    button, column, container, horizontal_space, row, scrollable, svg, text, vertical_space,
+};
 use muzzman_iced::{
     themes::{ButtonStyle, ContainerStyle},
     widgets::top_bar::TopBar,
@@ -40,9 +42,8 @@ impl MuzzManInstaller {
         let body = {
             container(
                 column(vec![
-                    text(&self.output_log)
+                    scrollable(text(&self.output_log).width(iced::Length::Fill))
                         .height(iced::Length::Fill)
-                        .width(iced::Length::Fill)
                         .into(),
                     column(vec![row(vec![
                         button("Install").on_press(Message::Install).into(),
@@ -74,6 +75,10 @@ impl MuzzManInstaller {
                 .style(ContainerStyle::Background)
                 .into();
 
-        content.explain(iced::Color::from_rgb(0.9, 0.9, 0.9))
+        if false {
+            content.explain(iced::Color::from_rgb(0.9, 0.9, 0.9))
+        } else {
+            content
+        }
     }
 }

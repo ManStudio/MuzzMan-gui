@@ -36,16 +36,7 @@ impl Application for MuzzManInstaller {
 
         let (log_sender, log_reciver) = std::sync::mpsc::channel::<String>();
 
-        let mut installer = TaskManager::new(log_sender);
-        installer.add_step(
-            |channel| {
-                Box::pin(async {
-                    let logger = Logger::new("Testing", channel);
-                    logger.log("Finished!")
-                })
-            },
-            vec![],
-        );
+        let installer = TaskManager::new(log_sender);
 
         (
             Self {

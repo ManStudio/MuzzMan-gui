@@ -1,3 +1,5 @@
+use std::io::{BufRead, BufReader, Read};
+
 use iced::Command;
 
 use crate::{application::MuzzManInstaller, logger::Logger, task_manager::TaskManager};
@@ -32,9 +34,11 @@ impl Clone for Message {
 
 impl MuzzManInstaller {
     pub fn process_logs(&mut self) {
-        match self.log_reciver.try_recv() {
-            Ok(msg) => self.output_log.push_str(&msg),
-            _ => {}
+        loop {
+            match self.log_reciver.try_recv() {
+                Ok(msg) => self.output_log.push_str(&msg),
+                _ => break,
+            }
         }
     }
 }
@@ -47,6 +51,7 @@ impl Message {
             Message::Close => return iced::window::close(),
             Message::Mimimize => return iced::window::minimize(true),
             Message::Install => {
+                install_tasks(&mut app.installer);
                 app.installer.arm();
                 return app.installer.process();
             }
@@ -69,9 +74,72 @@ pub fn install_tasks(manager: &mut TaskManager) {
     let rust_up = manager.add_step(
         |channel| {
             Box::pin(async {
-                let logger = Logger::new("Install RustUp", channel);
+                let logger = Logger::new("RustUp", channel);
+                loop {
+                    if std::process::Command::new("rustup").output().is_ok() {
+                        logger.log("RustUp is installed!");
+                        return;
+                    } else {
+                        logger.log("You should install rustup");
+                        logger.log("You can install rustup from https://rustup.rs/");
+                        logger.log("RustUp Installed finished");
+                        std::thread::sleep(std::time::Duration::from_secs(5))
+                    }
+                }
             })
         },
         vec![],
+    );
+
+    let update_rust = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("Rust Update", channel);
+                let mut process = std::process::Command::new("rustup")
+                    .arg("update")
+                    .stdout(std::process::Stdio::piped())
+                    .stderr(std::process::Stdio::piped())
+                    .spawn()
+                    .expect("rustup is not installed!");
+                let stdout = process.stdout.take().unwrap();
+                let stderr = process.stderr.take().unwrap();
+                let stdout_reader = BufReader::new(stdout);
+                let stderr_reader = BufReader::new(stderr);
+
+                let logger_1 = logger.clone();
+                let logger_2 = logger.clone();
+
+                let t1 = std::thread::spawn(move || {
+                    stdout_reader.lines().for_each(|line| {
+                        if let Ok(line) = line {
+                            logger_1.log(line)
+                        }
+                    })
+                });
+
+                let t2 = std::thread::spawn(move || {
+                    stderr_reader.lines().for_each(|line| {
+                        if let Ok(line) = line {
+                            logger_2.log(line)
+                        }
+                    })
+                });
+
+                let _ = t1.join();
+                let _ = t2.join();
+                logger.log("Finished!");
+            })
+        },
+        vec![rust_up],
+    );
+
+    let install_stable = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("Rust stable toolchain", channel);
+                logger.log("Install Stable");
+            })
+        },
+        vec![rust_up],
     );
 }
