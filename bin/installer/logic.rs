@@ -188,7 +188,7 @@ pub fn install_tasks(manager: &mut TaskManager) {
                 }
             })
         },
-        vec![],
+        vec![rust_up],
     );
 
     let setup_path = manager.add_step(
@@ -213,7 +213,7 @@ pub fn install_tasks(manager: &mut TaskManager) {
                 }
             })
         },
-        vec![],
+        vec![rust_up],
     );
 
     let install = manager.add_step(
