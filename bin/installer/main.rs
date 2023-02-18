@@ -15,7 +15,7 @@ fn main() {
     MuzzManInstaller::run(iced::Settings {
         id: None,
         window: iced::window::Settings {
-            size: (500, 300),
+            size: (700, 400),
             position: iced::window::Position::Centered,
             min_size: None,
             max_size: None,

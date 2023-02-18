@@ -30,6 +30,7 @@ path = "./bin/installer/main.rs"
 [dependencies]
 async-trait = "0.1.64"
 clap = { version = "4.1.4", features = ["derive"] }
+dirs = "4.0.0"
 env_logger = "0.10.0"
 # iced = {version = "0.7.0", features = ["svg", "debug", "image", "canvas"]}
 iced = {git = "https://github.com/iced-rs/iced", features = ["debug", "svg", "tokio"]}
@@ -38,3 +39,4 @@ muzzman-daemon = "0.0.5"
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
 toml = "0.7.1"
+winreg = "0.11.0"

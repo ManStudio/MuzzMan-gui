@@ -1482,6 +1482,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "clap",
+ "dirs",
  "env_logger",
  "iced",
  "iced_native",
@@ -1489,6 +1490,7 @@ dependencies = [
  "serde",
  "serde_json",
  "toml 0.7.1",
+ "winreg",
 ]
 
 [[package]]
@@ -3162,6 +3164,16 @@ dependencies = [
  "web-sys",
  "windows-sys 0.36.1",
  "x11-dl",
+]
+
+[[package]]
+name = "winreg"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76a1a57ff50e9b408431e8f97d5456f2807f8eb2a2cd79b06068fc87f8ecf189"
+dependencies = [
+ "cfg-if",
+ "winapi",
 ]
 
 [[package]]

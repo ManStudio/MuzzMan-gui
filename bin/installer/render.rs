@@ -31,8 +31,8 @@ impl MuzzManInstaller {
                 .on_press(Message::Close);
 
             let progress_bar = ProgressBar::new(
-                (self.installer.steps.len() as f32 - self.installer.to_do.len() as f32)
-                    / self.installer.steps.len() as f32,
+                (self.manager.steps.len() as f32 - self.manager.to_do.len() as f32)
+                    / self.manager.steps.len() as f32,
             );
 
             let mut buttons = vec![progress_bar.into(), mimimize_button.into()];
@@ -50,8 +50,12 @@ impl MuzzManInstaller {
             container(
                 column(vec![scrollable(
                     row(vec![
-                        text(&self.section_log).into(),
-                        text(&self.output_log).into(),
+                        container(text(&self.section_log))
+                            .style(ContainerStyle::Bar)
+                            .into(),
+                        container(text(&self.output_log))
+                            .style(ContainerStyle::Bar)
+                            .into(),
                     ])
                     .spacing(20)
                     .padding(10),
@@ -68,7 +72,7 @@ impl MuzzManInstaller {
         };
 
         let mut buttons = Vec::new();
-        if self.installer.to_do.is_empty() {
+        if self.manager.to_do.is_empty() {
             buttons.push(button("Install").on_press(Message::Install).into());
             buttons.push(button("UnInstall").on_press(Message::UnInstall).into())
         } else {

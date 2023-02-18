@@ -1,6 +1,10 @@
-use std::io::{BufRead, BufReader, Read};
+use std::{
+    io::{BufRead, BufReader, Read},
+    path::PathBuf,
+};
 
 use iced::Command;
+use muzzman_daemon::common::get_muzzman_dir;
 
 use crate::{application::MuzzManInstaller, logger::Logger, task_manager::TaskManager};
 
@@ -71,7 +75,7 @@ impl Message {
         match self {
             Message::Command(command) => commands.push(command),
             Message::Close => {
-                if app.installer.to_do.is_empty() {
+                if app.manager.to_do.is_empty() {
                     commands.push(iced::window::close());
                 } else {
                     app.should_close = true;
@@ -79,9 +83,9 @@ impl Message {
             }
             Message::Mimimize => commands.push(iced::window::minimize(true)),
             Message::Install => {
-                install_tasks(&mut app.installer);
-                app.installer.arm();
-                commands.push(app.installer.process());
+                install_tasks(&mut app.manager);
+                app.manager.arm();
+                commands.push(app.manager.process());
             }
             Message::UnInstall => {
                 todo!("The UnInstallProcess is not implemented");
@@ -89,8 +93,8 @@ impl Message {
             Message::Tick(_) => {}
             Message::TaskFinished(task) => {
                 println!("Task finished: {task}");
-                commands.push(app.installer.finished(task));
-                if app.should_close && app.installer.to_do.is_empty() {
+                commands.push(app.manager.finished(task));
+                if app.should_close && app.manager.to_do.is_empty() {
                     commands.push(iced::window::close());
                 }
             }
@@ -165,6 +169,82 @@ pub fn install_tasks(manager: &mut TaskManager) {
         },
         vec![install_stable],
     );
+
+    let local_bin = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("Local bin", channel);
+                logger.log("Verify if local bin folder exist");
+                logger.log(
+                    "Will create a ~/.local/bin folder or %AppData%\\Local\\MuzzMan\\bin if not exist",
+                );
+
+                let bin_path = get_bit_path();
+
+                let Some(bin_path) = bin_path else{logger.log("You are on a invalid os!");return};
+
+                if !bin_path.is_dir(){
+                    let _ = std::fs::create_dir(bin_path);
+                }
+            })
+        },
+        vec![],
+    );
+
+    let setup_path = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("setup_path", channel);
+                let bin_path = get_bit_path().expect("Cannot get local bin");
+                logger.log("Finished PATH");
+                logger.log(format!("Bin path: {}", bin_path.to_str().unwrap()));
+                println!("{:?}", std::env::var("PATH"));
+
+                let path = std::env::var("PATH").expect("Path");
+                if !path.contains(bin_path.to_str().unwrap()) {
+                    logger.log("Added to path");
+                    std::env::set_var("PATH", format!("{}:{}", bin_path.to_str().unwrap(), path));
+                    #[cfg(target_os = "windows")]
+                    {
+                        use winreg::{enums::*, RegKey};
+                        let hkcu = RegKey::predef(HKEY_CURRENT_USER);
+                        let (env, _) = hkcu.create_subkey("Environment").unwrap();
+                    }
+                }
+            })
+        },
+        vec![],
+    );
+
+    let install = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("install", channel);
+                logger.log("Installed!");
+            })
+        },
+        vec![build],
+    );
+}
+
+pub fn get_bit_path() -> Option<PathBuf> {
+    let mut bin_path = None;
+
+    #[cfg(target_os = "windows")]
+    {
+        bin_path = Some(get_muzzman_dir().join("bin"))
+    }
+    #[cfg(target_os = "linux")]
+    {
+        bin_path = Some(
+            dirs::home_dir()
+                .expect("No home dir!")
+                .join(".local")
+                .join("bin"),
+        );
+    }
+
+    bin_path
 }
 
 pub fn execute_command(command: &mut std::process::Command, logger: &Logger) {

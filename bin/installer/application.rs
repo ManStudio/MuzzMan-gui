@@ -11,7 +11,7 @@ pub struct MuzzManInstaller {
     pub output_log: String,
     pub section_log: String,
     pub log_reciver: std::sync::mpsc::Receiver<(String, String)>,
-    pub installer: TaskManager,
+    pub manager: TaskManager,
     pub should_close: bool,
     pub output_scroll_id: iced::widget::scrollable::Id,
     pub auto_scroll: bool,
@@ -46,7 +46,7 @@ impl Application for MuzzManInstaller {
             Self {
                 local: flags.local,
                 output_log: String::new(),
-                installer,
+                manager: installer,
                 log_reciver,
                 should_close: false,
                 output_scroll_id: iced::widget::scrollable::Id::unique(),
