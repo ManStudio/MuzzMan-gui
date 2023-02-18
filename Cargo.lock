@@ -1471,9 +1471,9 @@ dependencies = [
 
 [[package]]
 name = "muzzman-daemon"
-version = "0.0.6"
+version = "0.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0253358a67fea0e9ea7f03879eb39297443baa9dd99e235c874a736da50b360"
+checksum = "e66df415faa3bc5142ab375e443aa96df162ab8320ddfbb714e1ce15b9e9b409"
 dependencies = [
  "bytes-kman",
  "dirs",
