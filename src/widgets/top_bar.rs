@@ -30,7 +30,7 @@ where
     }
 
     fn height(&self) -> iced::Length {
-        iced::Length::Units(40)
+        iced::Length::Fixed(40.0)
     }
 
     fn layout(

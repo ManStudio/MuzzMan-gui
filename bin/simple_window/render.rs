@@ -70,7 +70,7 @@ impl MuzzManSimple {
             let content = container(top_bar)
                 .width(iced::Length::Fill)
                 .style(ContainerStyle::Bar)
-                .height(iced::Length::Units(40));
+                .height(iced::Length::Fixed(40.0));
             TopBar::new(content, Message::Command)
         };
 
@@ -88,7 +88,7 @@ impl MuzzManSimple {
             let download_button = button(text(text_for_download_btn).size(21))
                 .style(ButtonStyle::Download.into())
                 .on_press(Message::DownloadOrStop)
-                .height(iced::Length::Units(30));
+                .height(iced::Length::Fixed(30.0));
 
             iced::widget::row(vec![url_text.into(), download_button.into()]).spacing(5)
         };

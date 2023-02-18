@@ -25,18 +25,18 @@ impl MuzzManSimpleSettings {
 
             let close_button = button(close_svg)
                 .style(ButtonStyle::Flat.into())
-                .width(iced::Length::Units(36))
-                .height(iced::Length::Units(36))
+                .width(iced::Length::Fixed(36.0))
+                .height(iced::Length::Fixed(36.0))
                 .on_press(Message::Close);
             let minimize_button = button(minimize_svg)
                 .style(ButtonStyle::Flat.into())
-                .width(iced::Length::Units(36))
-                .height(iced::Length::Units(36))
+                .width(iced::Length::Fixed(36.0))
+                .height(iced::Length::Fixed(36.0))
                 .on_press(Message::Mimimize);
             let maximize_button = button(maximize_svg)
                 .style(ButtonStyle::Flat.into())
-                .width(iced::Length::Units(36))
-                .height(iced::Length::Units(36))
+                .width(iced::Length::Fixed(36.0))
+                .height(iced::Length::Fixed(36.0))
                 .on_press(Message::Maximize);
 
             let content = container(row(vec![
@@ -47,7 +47,7 @@ impl MuzzManSimpleSettings {
             ]))
             .center_y()
             .width(iced::Length::Fill)
-            .height(iced::Length::Units(40));
+            .height(iced::Length::Fixed(40.0));
             TopBar::new(content, Message::Command)
         };
 
@@ -68,7 +68,7 @@ impl MuzzManSimpleSettings {
                 button("Save").on_press(Message::Save).into(),
             ]))
             .width(iced::Length::Fill)
-            .height(iced::Length::Units(30))
+            .height(iced::Length::Fixed(30.0))
             .center_y()
             .style(ContainerStyle::Bar)
         };

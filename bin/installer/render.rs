@@ -42,7 +42,7 @@ impl MuzzManInstaller {
             }
 
             let top_bar =
-                container(row(buttons).padding(5).spacing(3)).height(iced::Length::Units(40));
+                container(row(buttons).padding(5).spacing(3)).height(iced::Length::Fixed(40.0));
             TopBar::new(top_bar, Message::Command)
         };
 
@@ -89,7 +89,7 @@ impl MuzzManInstaller {
             .center_x()
             .center_y()
             .width(iced::Length::Fill)
-            .height(iced::Length::Units(30))
+            .height(iced::Length::Fixed(30.0))
         };
 
         let content: iced::Element<Message, iced::Renderer<iced::Theme>> =
