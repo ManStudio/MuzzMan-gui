@@ -27,6 +27,9 @@ path = "./bin/settings_window/main.rs"
 name = "installer"
 path = "./bin/installer/main.rs"
 
+[target."cfg(windows)".dependencies]
+winreg = "0.11.0"
+
 [dependencies]
 async-trait = "0.1.64"
 clap = { version = "4.1.4", features = ["derive"] }
@@ -35,8 +38,7 @@ env_logger = "0.10.0"
 # iced = {version = "0.7.0", features = ["svg", "debug", "image", "canvas"]}
 iced = {git = "https://github.com/iced-rs/iced", features = ["debug", "svg", "tokio"]}
 iced_native = {git = "https://github.com/iced-rs/iced"}
-muzzman-daemon = "0.0.5"
+muzzman-daemon = "0.0.6"
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.91"
 toml = "0.7.1"
-winreg = "0.11.0"

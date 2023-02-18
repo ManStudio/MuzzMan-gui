@@ -203,12 +203,17 @@ pub fn install_tasks(manager: &mut TaskManager) {
                 let path = std::env::var("PATH").expect("Path");
                 if !path.contains(bin_path.to_str().unwrap()) {
                     logger.log("Added to path");
+                    #[cfg(target_os = "linux")]
                     std::env::set_var("PATH", format!("{}:{}", bin_path.to_str().unwrap(), path));
+                    #[cfg(target_os = "windows")]
+                    std::env::set_var("PATH", format!("{};{}", bin_path.to_str().unwrap(), path));
+
                     #[cfg(target_os = "windows")]
                     {
                         use winreg::{enums::*, RegKey};
                         let hkcu = RegKey::predef(HKEY_CURRENT_USER);
                         let (env, _) = hkcu.create_subkey("Environment").unwrap();
+                        env.set_value("PATH", &std::env::var("PATH").unwrap());
                     }
                 }
             })
