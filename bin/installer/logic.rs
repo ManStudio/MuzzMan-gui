@@ -85,7 +85,7 @@ impl Message {
             }
             Message::Mimimize => commands.push(iced::window::minimize(true)),
             Message::Install => {
-                install_tasks(&mut app.manager);
+                app.install_tasks();
                 app.manager.arm();
                 commands.push(app.manager.process());
             }
@@ -106,73 +106,79 @@ impl Message {
     }
 }
 
-pub fn install_tasks(manager: &mut TaskManager) {
-    manager.clear();
+impl MuzzManInstaller {
+    pub fn install_tasks(&mut self) {
+        let manager = &mut self.manager;
+        manager.clear();
 
-    let rust_up = manager.add_step(
-        |channel| {
-            Box::pin(async {
-                let logger = Logger::new("RustUp", channel);
-                loop {
-                    if std::process::Command::new("rustup").output().is_ok() {
-                        logger.log("RustUp is installed!");
-                        return;
-                    } else {
-                        logger.log("You should install rustup");
-                        logger.log("You can install rustup from https://rustup.rs/");
-                        logger.log("RustUp Installed finished");
-                        std::thread::sleep(std::time::Duration::from_secs(5))
+        let rust_up = manager.add_step(
+            |channel| {
+                Box::pin(async {
+                    let logger = Logger::new("RustUp", channel);
+                    loop {
+                        if std::process::Command::new("rustup").output().is_ok() {
+                            logger.log("RustUp is installed!");
+                            return;
+                        } else {
+                            logger.log("You should install rustup");
+                            logger.log("You can install rustup from https://rustup.rs/");
+                            logger.log("RustUp Installed finished");
+                            std::thread::sleep(std::time::Duration::from_secs(5))
+                        }
                     }
-                }
-            })
-        },
-        vec![],
-    );
+                })
+            },
+            vec![],
+        );
 
-    let update_rust = manager.add_step(
-        |channel| {
-            Box::pin(async {
-                let logger = Logger::new("Rust Update", channel);
-                execute_command(std::process::Command::new("rustup").arg("update"), &logger);
-                logger.log("Finished!");
-            })
-        },
-        vec![rust_up],
-    );
+        let update_rust = manager.add_step(
+            |channel| {
+                Box::pin(async {
+                    let logger = Logger::new("Rust Update", channel);
+                    execute_command(std::process::Command::new("rustup").arg("update"), &logger);
+                    logger.log("Finished!");
+                })
+            },
+            vec![rust_up],
+        );
 
-    let install_stable = manager.add_step(
-        |channel| {
-            Box::pin(async {
-                let logger = Logger::new("Rust stable toolchain", channel);
-                execute_command(
-                    std::process::Command::new("rustup")
-                        .arg("install")
-                        .arg("stable"),
-                    &logger,
-                );
-                logger.log("Finished");
-            })
-        },
-        vec![update_rust],
-    );
+        let install_stable = manager.add_step(
+            |channel| {
+                Box::pin(async {
+                    let logger = Logger::new("Rust stable toolchain", channel);
+                    execute_command(
+                        std::process::Command::new("rustup")
+                            .arg("install")
+                            .arg("stable"),
+                        &logger,
+                    );
+                    logger.log("Finished");
+                })
+            },
+            vec![update_rust],
+        );
 
-    let build = manager.add_step(
-        |channel| {
-            Box::pin(async {
-                let logger = Logger::new("build", channel);
-                execute_command(
-                    std::process::Command::new("cargo")
-                        .arg("build")
-                        .arg("--release"),
-                    &logger,
-                );
-                logger.log("Builded!");
-            })
-        },
-        vec![install_stable],
-    );
+        let build = if self.local {
+            manager.add_step(
+                |channel| {
+                    Box::pin(async {
+                        let logger = Logger::new("build", channel);
+                        execute_command(
+                            std::process::Command::new("cargo")
+                                .arg("build")
+                                .arg("--release"),
+                            &logger,
+                        );
+                        logger.log("Builded!");
+                    })
+                },
+                vec![install_stable],
+            )
+        } else {
+            panic!("Online install not implemented!")
+        };
 
-    let local_bin = manager.add_step(
+        let local_bin = manager.add_step(
         |channel| {
             Box::pin(async {
                 let logger = Logger::new("Local bin", channel);
@@ -190,10 +196,9 @@ pub fn install_tasks(manager: &mut TaskManager) {
                 }
             })
         },
-        vec![rust_up],
-    );
+        vec![rust_up],);
 
-    let setup_path = manager.add_step(
+        let setup_path = manager.add_step(
         |channel| {
             Box::pin(async {
                 let logger = Logger::new("setup_path", channel);
@@ -239,105 +244,109 @@ pub fn install_tasks(manager: &mut TaskManager) {
                 }
             })
         },
-        vec![rust_up],
-    );
+        vec![rust_up],);
 
-    fn install(name: &str) -> std::io::Result<u64> {
-        let path = get_bin_path().unwrap();
+        if self.local {
+            fn install(name: &str) -> std::io::Result<u64> {
+                let path = get_bin_path().unwrap();
 
-        std::fs::copy(
-            PathBuf::from("target")
-                .join("release")
-                .join(format!("{name}{}", std::env::consts::EXE_EXTENSION)),
-            path.join(format!("{name}{}", std::env::consts::EXE_EXTENSION)),
-        )
-    };
+                std::fs::copy(
+                    PathBuf::from("target")
+                        .join("release")
+                        .join(format!("{name}{}", std::env::consts::EXE_EXTENSION)),
+                    path.join(format!("{name}{}", std::env::consts::EXE_EXTENSION)),
+                )
+            }
 
-    let install_muzzman_simple = manager.add_step(
-        |channel| {
-            Box::pin(async {
-                let logger = Logger::new("MuzzMan Simple", channel);
-                logger.log("Installing");
+            let install_muzzman_simple = manager.add_step(
+                |channel| {
+                    Box::pin(async {
+                        let logger = Logger::new("MuzzMan Simple", channel);
+                        logger.log("Installing");
 
-                install("muzzman_simple").unwrap();
+                        install("muzzman_simple").unwrap();
 
-                logger.log("Installed!");
-            })
-        },
-        vec![build],
-    );
+                        logger.log("Installed!");
+                    })
+                },
+                vec![build],
+            );
 
-    let install_muzzman_simple_settings = manager.add_step(
-        |channel| {
-            Box::pin(async {
-                let logger = Logger::new("MuzzMan Simple Settings", channel);
-                logger.log("Installing");
+            let install_muzzman_simple_settings = manager.add_step(
+                |channel| {
+                    Box::pin(async {
+                        let logger = Logger::new("MuzzMan Simple Settings", channel);
+                        logger.log("Installing");
 
-                install("muzzman_simple_settings").unwrap();
+                        install("muzzman_simple_settings").unwrap();
 
-                logger.log("Installed!");
-            })
-        },
-        vec![build],
-    );
+                        logger.log("Installed!");
+                    })
+                },
+                vec![build],
+            );
 
-    let install_muzzman_progress = manager.add_step(
-        |channel| {
-            Box::pin(async {
-                let logger = Logger::new("MuzzMan Progress", channel);
-                logger.log("Installing");
+            let install_muzzman_progress = manager.add_step(
+                |channel| {
+                    Box::pin(async {
+                        let logger = Logger::new("MuzzMan Progress", channel);
+                        logger.log("Installing");
 
-                install("muzzman_progress").unwrap();
+                        install("muzzman_progress").unwrap();
 
-                logger.log("Installed!");
-            })
-        },
-        vec![build],
-    );
+                        logger.log("Installed!");
+                    })
+                },
+                vec![build],
+            );
 
-    let install_muzzman_manager = manager.add_step(
-        |channel| {
-            Box::pin(async {
-                let logger = Logger::new("MuzzMan Manager", channel);
-                logger.log("Installing");
+            let install_muzzman_manager = manager.add_step(
+                |channel| {
+                    Box::pin(async {
+                        let logger = Logger::new("MuzzMan Manager", channel);
+                        logger.log("Installing");
 
-                install("muzzman_manager").unwrap();
+                        install("muzzman_manager").unwrap();
 
-                logger.log("Installed!");
-            })
-        },
-        vec![build],
-    );
+                        logger.log("Installed!");
+                    })
+                },
+                vec![build],
+            );
 
-    let install_muzzman_settings = manager.add_step(
-        |channel| {
-            Box::pin(async {
-                let logger = Logger::new("MuzzMan Settings", channel);
-                logger.log("Installing");
+            let install_muzzman_settings = manager.add_step(
+                |channel| {
+                    Box::pin(async {
+                        let logger = Logger::new("MuzzMan Settings", channel);
+                        logger.log("Installing");
 
-                install("muzzman_settings").unwrap();
+                        install("muzzman_settings").unwrap();
 
-                logger.log("Installed!");
-            })
-        },
-        vec![build],
-    );
+                        logger.log("Installed!");
+                    })
+                },
+                vec![build],
+            );
 
-    let _install = manager.add_step(
-        |channel| {
-            Box::pin(async {
-                let logger = Logger::new("MuzzMan Installer", channel);
-                logger.log("Install succesful!");
-            })
-        },
-        vec![
-            install_muzzman_simple,
-            install_muzzman_simple_settings,
-            install_muzzman_progress,
-            install_muzzman_manager,
-            install_muzzman_settings,
-        ],
-    );
+            let _install = manager.add_step(
+                |channel| {
+                    Box::pin(async {
+                        let logger = Logger::new("MuzzMan Installer", channel);
+                        logger.log("Install succesful!");
+                    })
+                },
+                vec![
+                    install_muzzman_simple,
+                    install_muzzman_simple_settings,
+                    install_muzzman_progress,
+                    install_muzzman_manager,
+                    install_muzzman_settings,
+                ],
+            );
+        } else {
+            panic!("Online install not implemented!")
+        }
+    }
 }
 
 pub fn get_bin_path() -> Option<PathBuf> {
