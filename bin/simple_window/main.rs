@@ -36,6 +36,7 @@ impl Application for MuzzManSimple {
     type Flags = Flags;
 
     fn new(flags: Self::Flags) -> (Self, Command<Self::Message>) {
+        let mut iced_command = Command::none();
         let mut tmp_url = String::new();
         let mut tmp_element = None;
         let mut tmp_status = String::from("No element! Put the url and press download!");
@@ -82,14 +83,8 @@ impl Application for MuzzManSimple {
                     let element = location.create_element(&name).unwrap();
                     element.set_url(Some(tmp_url.clone())).unwrap();
                     if download {
-                        let res = element.resolv_module().unwrap();
-                        tmp_status = if res {
-                            "Resolved!".to_string()
-                        } else {
-                            "Cannot resolv! You don't have the module or url is invalid!"
-                                .to_string()
-                        };
-                        element.set_enabled(true, None).unwrap();
+                        iced_command =
+                            iced::Command::perform(async {}, |_| Message::DownloadOrStop);
                     }
                     tmp_element = Some(element);
                 }
@@ -113,7 +108,7 @@ impl Application for MuzzManSimple {
             progress: 0.0,
         };
 
-        (res, Command::none())
+        (res, iced_command)
     }
 
     fn title(&self) -> String {

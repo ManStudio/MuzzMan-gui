@@ -103,9 +103,21 @@ impl Message {
                     app.downloading = false;
                 }
             }
-            Message::Settings => todo!(),
-            Message::Morph => todo!(),
-            Message::OpenProgress => todo!(),
+            Message::Settings => {
+                std::process::Command::new("muzzman_simple_settings").spawn();
+            }
+            Message::Morph => {
+                std::process::Command::new("muzzman_manager").spawn();
+            }
+            Message::OpenProgress => {
+                if let Some(element) = &app.element {
+                    let element = serde_json::to_string(&element.id()).unwrap();
+                    std::process::Command::new("muzzman_progress")
+                        .arg("info")
+                        .arg(element)
+                        .spawn();
+                }
+            }
             Message::Command(command) => return command,
         }
         Command::none()
