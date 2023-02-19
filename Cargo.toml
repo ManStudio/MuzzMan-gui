@@ -6,21 +6,21 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [[bin]]
-name = "simple"
+name = "muzzman_simple"
 path = "./bin/simple_window/main.rs"
 [[bin]]
-name = "simple_settings"
+name = "muzzman_simple_settings"
 path = "./bin/simple_settings_window/main.rs"
 
 [[bin]]
-name = "progress"
+name = "muzzman_progress"
 path = "./bin/progress_window/main.rs"
 
 [[bin]]
-name = "manager"
+name = "muzzman_manager"
 path = "./bin/manager_window/main.rs"
 [[bin]]
-name = "settings"
+name = "muzzman_settings"
 path = "./bin/settings_window/main.rs"
 
 [[bin]]

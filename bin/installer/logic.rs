@@ -1,5 +1,7 @@
 use std::{
-    io::{BufRead, BufReader, Read},
+    ffi::OsString,
+    fs::File,
+    io::{BufRead, BufReader, Read, Seek, Write},
     path::PathBuf,
 };
 
@@ -179,7 +181,7 @@ pub fn install_tasks(manager: &mut TaskManager) {
                     "Will create a ~/.local/bin folder or %AppData%\\Local\\MuzzMan\\bin if not exist",
                 );
 
-                let bin_path = get_bit_path();
+                let bin_path = get_bin_path();
 
                 let Some(bin_path) = bin_path else{logger.log("You are on a invalid os!");return};
 
@@ -195,19 +197,37 @@ pub fn install_tasks(manager: &mut TaskManager) {
         |channel| {
             Box::pin(async {
                 let logger = Logger::new("setup_path", channel);
-                let bin_path = get_bit_path().expect("Cannot get local bin");
-                logger.log("Finished PATH");
+                let bin_path = get_bin_path().expect("Cannot get local bin");
                 logger.log(format!("Bin path: {}", bin_path.to_str().unwrap()));
-                println!("{:?}", std::env::var("PATH"));
 
-                let path = std::env::var("PATH").expect("Path");
+                let path = std::env::var("PATH").expect(bin_path.to_str().unwrap());
                 if !path.contains(bin_path.to_str().unwrap()) {
-                    logger.log("Added to path");
                     #[cfg(target_os = "linux")]
                     std::env::set_var("PATH", format!("{}:{}", bin_path.to_str().unwrap(), path));
                     #[cfg(target_os = "windows")]
                     std::env::set_var("PATH", format!("{};{}", bin_path.to_str().unwrap(), path));
+                    logger.log("Added to local path!");
 
+                    #[cfg(target_os = "linux")]
+                    {
+                        if let Ok(shell) = std::env::var("SHELL"){
+                            if shell.contains("bash"){
+                                let mut file = File::options().write(true).open(format!("{}/.bashrc", dirs::home_dir().unwrap().to_str().unwrap())).unwrap();
+                                file.seek(std::io::SeekFrom::End(0)).unwrap();
+                                file.write_all(format!("export PATH=\"{}:$PATH\"\n", bin_path.to_str().unwrap()).as_bytes()).unwrap();
+                            }else if shell.contains("zsh"){
+                                let mut file = File::options().write(true).open(format!("{}/.zshrc", dirs::home_dir().unwrap().to_str().unwrap())).unwrap();
+                                file.seek(std::io::SeekFrom::End(0)).unwrap();
+                                file.write_all(format!("export PATH=\"{}:$PATH\"\n", bin_path.to_str().unwrap()).as_bytes()).unwrap();
+                            }else{
+                                logger.log("Error: Path cannot be updated you need to add ~/.local/bin to you path")
+                            }
+
+                        }else{
+                            logger.log("Error: Cannot find that means will not be in the path you need to add ~/.local/bin to your path");
+                            return
+                        }
+                    }
                     #[cfg(target_os = "windows")]
                     {
                         use winreg::{enums::*, RegKey};
@@ -215,24 +235,112 @@ pub fn install_tasks(manager: &mut TaskManager) {
                         let (env, _) = hkcu.create_subkey("Environment").unwrap();
                         env.set_value("PATH", &std::env::var("PATH").unwrap());
                     }
+                    logger.log("Finished PATH");
                 }
             })
         },
         vec![rust_up],
     );
 
-    let install = manager.add_step(
+    fn install(name: &str) -> std::io::Result<u64> {
+        let path = get_bin_path().unwrap();
+
+        std::fs::copy(
+            PathBuf::from("target")
+                .join("release")
+                .join(format!("{name}{}", std::env::consts::EXE_EXTENSION)),
+            path.join(format!("{name}{}", std::env::consts::EXE_EXTENSION)),
+        )
+    };
+
+    let install_muzzman_simple = manager.add_step(
         |channel| {
             Box::pin(async {
-                let logger = Logger::new("install", channel);
+                let logger = Logger::new("MuzzMan Simple", channel);
+                logger.log("Installing");
+
+                install("muzzman_simple").unwrap();
+
                 logger.log("Installed!");
             })
         },
         vec![build],
     );
+
+    let install_muzzman_simple_settings = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("MuzzMan Simple Settings", channel);
+                logger.log("Installing");
+
+                install("muzzman_simple_settings").unwrap();
+
+                logger.log("Installed!");
+            })
+        },
+        vec![build],
+    );
+
+    let install_muzzman_progress = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("MuzzMan Progress", channel);
+                logger.log("Installing");
+
+                install("muzzman_progress").unwrap();
+
+                logger.log("Installed!");
+            })
+        },
+        vec![build],
+    );
+
+    let install_muzzman_manager = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("MuzzMan Manager", channel);
+                logger.log("Installing");
+
+                install("muzzman_manager").unwrap();
+
+                logger.log("Installed!");
+            })
+        },
+        vec![build],
+    );
+
+    let install_muzzman_settings = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("MuzzMan Settings", channel);
+                logger.log("Installing");
+
+                install("muzzman_settings").unwrap();
+
+                logger.log("Installed!");
+            })
+        },
+        vec![build],
+    );
+
+    let _install = manager.add_step(
+        |channel| {
+            Box::pin(async {
+                let logger = Logger::new("MuzzMan Installer", channel);
+                logger.log("Install succesful!");
+            })
+        },
+        vec![
+            install_muzzman_simple,
+            install_muzzman_simple_settings,
+            install_muzzman_progress,
+            install_muzzman_manager,
+            install_muzzman_settings,
+        ],
+    );
 }
 
-pub fn get_bit_path() -> Option<PathBuf> {
+pub fn get_bin_path() -> Option<PathBuf> {
     let mut bin_path = None;
 
     #[cfg(target_os = "windows")]
