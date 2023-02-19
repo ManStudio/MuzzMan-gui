@@ -19,6 +19,7 @@ pub enum Message {
     UnInstall,
     TaskFinished(usize),
     ChangeAutoScroll(bool),
+    ChangeLocal(bool),
     Tick(iced::time::Instant),
 }
 
@@ -35,6 +36,7 @@ impl Clone for Message {
             Message::UnInstall => Self::UnInstall,
             Message::TaskFinished(task) => Self::TaskFinished(task.clone()),
             Message::ChangeAutoScroll(value) => Self::ChangeAutoScroll(*value),
+            Message::ChangeLocal(value) => Self::ChangeLocal(*value),
             Message::Command(_) => todo!(),
         }
     }
@@ -101,6 +103,7 @@ impl Message {
                 }
             }
             Message::ChangeAutoScroll(value) => app.auto_scroll = value,
+            Message::ChangeLocal(value) => app.local = value,
         }
         Command::batch(commands)
     }

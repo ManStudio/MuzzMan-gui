@@ -73,6 +73,7 @@ impl MuzzManInstaller {
 
         let mut buttons = Vec::new();
         if self.manager.to_do.is_empty() {
+            buttons.push(checkbox("Local", self.local, Message::ChangeLocal).into());
             buttons.push(button("Install").on_press(Message::Install).into());
             buttons.push(button("UnInstall").on_press(Message::UnInstall).into())
         } else {
@@ -81,9 +82,12 @@ impl MuzzManInstaller {
         buttons.push(checkbox("AutoScroll", self.auto_scroll, Message::ChangeAutoScroll).into());
         let status_bar = {
             container(
-                column(vec![row(buttons).spacing(5).into()])
-                    .width(iced::Length::Fill)
-                    .align_items(iced::Alignment::Center),
+                column(vec![row(buttons)
+                    .spacing(5)
+                    .align_items(iced::Alignment::Center)
+                    .into()])
+                .width(iced::Length::Fill)
+                .align_items(iced::Alignment::Center),
             )
             .style(ContainerStyle::Bar)
             .center_x()
