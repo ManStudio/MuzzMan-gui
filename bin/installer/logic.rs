@@ -134,6 +134,51 @@ impl MuzzManInstaller {
             vec![],
         );
 
+        let git = manager.add_step(
+            |channel| {
+                Box::pin(async {
+                    let logger = Logger::new("Git", channel);
+
+                    loop {
+                        if std::process::Command::new("git").output().is_ok() {
+                            logger.log("Is installed!");
+                            return;
+                        } else {
+                            logger.log("You should install git");
+                            logger.log("You can install git from https://git-scm.com/");
+                            logger.log("Installed finished");
+                            std::thread::sleep(std::time::Duration::from_secs(5))
+                        }
+                    }
+                })
+            },
+            vec![],
+        );
+
+        let git_submodule_update = if self.local {
+            manager.add_step(
+                |channel| {
+                    Box::pin(async {
+                        let logger = Logger::new("Git Submodule Update", channel);
+
+                        execute_command(
+                            std::process::Command::new("git")
+                                .arg("submodule")
+                                .arg("update")
+                                .arg("--recursive")
+                                .arg("--init"),
+                            &logger,
+                        );
+
+                        logger.log("Finished");
+                    })
+                },
+                vec![git],
+            )
+        } else {
+            panic!("Not implemented!")
+        };
+
         let update_rust = manager.add_step(
             |channel| {
                 Box::pin(async {
@@ -142,7 +187,7 @@ impl MuzzManInstaller {
                     logger.log("Finished!");
                 })
             },
-            vec![rust_up],
+            vec![rust_up, git],
         );
 
         let install_stable = manager.add_step(
