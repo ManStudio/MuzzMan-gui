@@ -206,6 +206,29 @@ impl MuzzManInstaller {
             vec![update_rust],
         );
 
+        let daemon_build = if self.local {
+            manager.add_step(
+                |channel| {
+                    Box::pin(async {
+                        let logger = Logger::new("Build Daemon", channel);
+                        std::env::set_current_dir(PathBuf::from("muzzman-daemon"))
+                            .expect("Expecting muzzman-daemon repo");
+                        execute_command(
+                            std::process::Command::new("cargo")
+                                .arg("build")
+                                .arg("--release"),
+                            &logger,
+                        );
+                        let _ = std::env::set_current_dir(PathBuf::from("..")).unwrap();
+                        logger.log("Builded!");
+                    })
+                },
+                vec![git, install_stable],
+            )
+        } else {
+            todo!()
+        };
+
         let build = if self.local {
             manager.add_step(
                 |channel| {
@@ -295,16 +318,28 @@ impl MuzzManInstaller {
         vec![rust_up],);
 
         if self.local {
-            fn install(name: &str) -> std::io::Result<u64> {
+            fn install(name: &str, from: PathBuf) -> std::io::Result<u64> {
                 let path = get_bin_path().unwrap();
 
                 std::fs::copy(
-                    PathBuf::from("target")
+                    from.join("target")
                         .join("release")
                         .join(format!("{name}{}", std::env::consts::EXE_EXTENSION)),
                     path.join(format!("{name}{}", std::env::consts::EXE_EXTENSION)),
                 )
             }
+
+            let install_muzzman_daemon = manager.add_step(
+                |channel| {
+                    Box::pin(async {
+                        let logger = Logger::new("MuzzMan Daemon", channel);
+                        logger.log("Installing");
+                        install("muzzman-daemon", PathBuf::from("muzzman-daemon")).unwrap();
+                        logger.log("Installed");
+                    })
+                },
+                vec![daemon_build],
+            );
 
             let install_muzzman_simple = manager.add_step(
                 |channel| {
@@ -312,7 +347,7 @@ impl MuzzManInstaller {
                         let logger = Logger::new("MuzzMan Simple", channel);
                         logger.log("Installing");
 
-                        install("muzzman_simple").unwrap();
+                        install("muzzman_simple", PathBuf::from(".")).unwrap();
 
                         logger.log("Installed!");
                     })
@@ -326,7 +361,7 @@ impl MuzzManInstaller {
                         let logger = Logger::new("MuzzMan Simple Settings", channel);
                         logger.log("Installing");
 
-                        install("muzzman_simple_settings").unwrap();
+                        install("muzzman_simple_settings", PathBuf::from(".")).unwrap();
 
                         logger.log("Installed!");
                     })
@@ -340,7 +375,7 @@ impl MuzzManInstaller {
                         let logger = Logger::new("MuzzMan Progress", channel);
                         logger.log("Installing");
 
-                        install("muzzman_progress").unwrap();
+                        install("muzzman_progress", PathBuf::from(".")).unwrap();
 
                         logger.log("Installed!");
                     })
@@ -354,7 +389,7 @@ impl MuzzManInstaller {
                         let logger = Logger::new("MuzzMan Manager", channel);
                         logger.log("Installing");
 
-                        install("muzzman_manager").unwrap();
+                        install("muzzman_manager", PathBuf::from(".")).unwrap();
 
                         logger.log("Installed!");
                     })
@@ -368,7 +403,7 @@ impl MuzzManInstaller {
                         let logger = Logger::new("MuzzMan Settings", channel);
                         logger.log("Installing");
 
-                        install("muzzman_settings").unwrap();
+                        install("muzzman_settings", PathBuf::new()).unwrap();
 
                         logger.log("Installed!");
                     })
