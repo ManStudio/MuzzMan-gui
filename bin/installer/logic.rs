@@ -1,11 +1,11 @@
 use std::{
-    ffi::OsString,
     fs::File,
-    io::{BufRead, BufReader, Read, Seek, Write},
+    io::{BufRead, BufReader, Seek, Write},
     path::PathBuf,
 };
 
 use iced::Command;
+#[cfg(target_os = "windows")]
 use muzzman_daemon::common::get_muzzman_dir;
 
 use crate::{application::MuzzManInstaller, logger::Logger, task_manager::TaskManager};
@@ -219,7 +219,7 @@ impl MuzzManInstaller {
                                 .arg("--release"),
                             &logger,
                         );
-                        let _ = std::env::set_current_dir(PathBuf::from("..")).unwrap();
+                        std::env::set_current_dir(PathBuf::from("..")).unwrap();
                         logger.log("Builded!");
                     })
                 },
@@ -276,7 +276,7 @@ impl MuzzManInstaller {
                 let bin_path = get_bin_path().expect("Cannot get local bin");
                 logger.log(format!("Bin path: {}", bin_path.to_str().unwrap()));
 
-                let path = std::env::var("PATH").expect(bin_path.to_str().unwrap());
+                let path = std::env::var("PATH").unwrap_or_else(|_| { panic!("{}", bin_path.to_str().unwrap().to_string()) });
                 if !path.contains(bin_path.to_str().unwrap()) {
                     #[cfg(target_os = "linux")]
                     std::env::set_var("PATH", format!("{}:{}", bin_path.to_str().unwrap(), path));
@@ -490,7 +490,7 @@ WantedBy = default.target",
 }
 
 pub fn get_bin_path() -> Option<PathBuf> {
-    let mut bin_path = None;
+    let bin_path;
 
     #[cfg(target_os = "windows")]
     {
