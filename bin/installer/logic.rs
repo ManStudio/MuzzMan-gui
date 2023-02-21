@@ -333,14 +333,15 @@ impl MuzzManInstaller {
                 |channel| {
                     Box::pin(async {
                         let logger = Logger::new("MuzzMan Daemon", channel);
-                        std::process::Command::new("systemctl")
+                        // stop systemd service if exists
+                        if let Ok(mut process) = std::process::Command::new("systemctl")
                             .arg("--user")
                             .arg("stop")
                             .arg("muzzman-daemon.service")
                             .spawn()
-                            .unwrap()
-                            .wait()
-                            .unwrap();
+                        {
+                            let _ = process.wait();
+                        }
                         logger.log("Installing");
                         install("muzzman-daemon", PathBuf::from("muzzman-daemon")).unwrap();
                         logger.log("Installed");
