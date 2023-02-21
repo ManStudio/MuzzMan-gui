@@ -1,2 +1,2 @@
-main:
-	cd main-window && cargo run
+installer:
+	cargo run --bin installer -- -l
