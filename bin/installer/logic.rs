@@ -336,6 +336,53 @@ impl MuzzManInstaller {
                         logger.log("Installing");
                         install("muzzman-daemon", PathBuf::from("muzzman-daemon")).unwrap();
                         logger.log("Installed");
+
+                        logger.log("Create Service!");
+                        #[cfg(target_os = "linux")]
+                        {
+                            let mut systemd =
+                                dirs::home_dir().unwrap().join(".config").join("systemd");
+                            // has systemd
+                            if systemd.is_dir() {
+                                systemd = systemd.join("user");
+                                let _ = std::fs::create_dir_all(&systemd);
+                                let service_path = systemd.join("muzzman-daemon.service");
+                                let mut file = std::fs::File::options()
+                                    .write(true)
+                                    .create(true)
+                                    .open(service_path)
+                                    .unwrap();
+                                let _ = file.rewind();
+                                let bin_path = get_bin_path().unwrap();
+                                write!(
+                                    file,
+                                    "[Unit]
+Description = MuzzMan Daemon
+
+[Service]
+ExecStart = {}/muzzman-daemon
+
+[Install]
+WantedBy = default.target",
+                                    bin_path.to_str().unwrap()
+                                )
+                                .unwrap();
+                                logger.log("Create Systemd user service!");
+                                std::process::Command::new("systemctl")
+                                    .arg("--user")
+                                    .arg("enable")
+                                    .arg("muzzman-daemon.service")
+                                    .arg("--now")
+                                    .spawn()
+                                    .unwrap()
+                                    .wait()
+                                    .unwrap();
+                                logger.log("Systemd service enabled and started!");
+                            }
+                        }
+                        #[cfg(target_os = "windows")]
+                        {}
+                        logger.log("Service created!");
                     })
                 },
                 vec![daemon_build],
