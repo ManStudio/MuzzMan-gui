@@ -333,6 +333,14 @@ impl MuzzManInstaller {
                 |channel| {
                     Box::pin(async {
                         let logger = Logger::new("MuzzMan Daemon", channel);
+                        std::process::Command::new("systemctl")
+                            .arg("--user")
+                            .arg("stop")
+                            .arg("muzzman-daemon.service")
+                            .spawn()
+                            .unwrap()
+                            .wait()
+                            .unwrap();
                         logger.log("Installing");
                         install("muzzman-daemon", PathBuf::from("muzzman-daemon")).unwrap();
                         logger.log("Installed");
@@ -347,6 +355,7 @@ impl MuzzManInstaller {
                                 systemd = systemd.join("user");
                                 let _ = std::fs::create_dir_all(&systemd);
                                 let service_path = systemd.join("muzzman-daemon.service");
+
                                 let mut file = std::fs::File::options()
                                     .write(true)
                                     .create(true)
