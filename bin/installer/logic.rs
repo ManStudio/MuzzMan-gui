@@ -166,7 +166,8 @@ impl MuzzManInstaller {
                                 .arg("submodule")
                                 .arg("update")
                                 .arg("--recursive")
-                                .arg("--init"),
+                                .arg("--init")
+                                .arg("--remote"),
                             &logger,
                         );
 
@@ -223,7 +224,7 @@ impl MuzzManInstaller {
                         logger.log("Builded!");
                     })
                 },
-                vec![git, install_stable],
+                vec![git_submodule_update, install_stable],
             )
         } else {
             todo!()
