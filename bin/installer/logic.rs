@@ -244,7 +244,7 @@ impl MuzzManInstaller {
                         logger.log("Builded!");
                     })
                 },
-                vec![install_stable],
+                vec![install_stable, daemon_build],
             )
         } else {
             panic!("Online install not implemented!")
