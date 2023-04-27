@@ -79,7 +79,8 @@ impl MuzzManSimple {
         //
 
         let body = {
-            let url_text = text_input("Url: ", &self.url, Message::ChangeUrl)
+            let url_text = text_input("Url: ", &self.url)
+                .on_input(Message::ChangeUrl)
                 .size(21)
                 .on_submit(Message::DownloadOrStop)
                 .style(TextInputStyle::Text);

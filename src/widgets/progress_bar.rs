@@ -1,5 +1,5 @@
-use iced::{Background, Color, Command, Element};
-use iced_native::Widget;
+use iced::{Command, Element};
+use iced_native::{Background, Color, Length, Widget};
 
 use crate::themes::Colors;
 
@@ -7,8 +7,8 @@ pub struct ProgressBar<Message> {
     pub progress: f32,
     pub on_right: Option<Message>,
 
-    pub height: iced::Length,
-    pub width: iced::Length,
+    pub height: Length,
+    pub width: Length,
 }
 
 impl<Message> ProgressBar<Message> {
@@ -16,8 +16,8 @@ impl<Message> ProgressBar<Message> {
         Self {
             progress,
             on_right: None,
-            height: iced::Length::Fill,
-            width: iced::Length::Fill,
+            height: Length::Fill,
+            width: Length::Fill,
         }
     }
 
@@ -28,11 +28,11 @@ impl<Message> ProgressBar<Message> {
         }
     }
 
-    pub fn width(self, width: iced::Length) -> Self {
+    pub fn width(self, width: Length) -> Self {
         Self { width, ..self }
     }
 
-    pub fn height(self, height: iced::Length) -> Self {
+    pub fn height(self, height: Length) -> Self {
         Self { height, ..self }
     }
 }
@@ -42,11 +42,11 @@ where
     Renderer: iced_native::text::Renderer,
     Message: Clone,
 {
-    fn width(&self) -> iced::Length {
+    fn width(&self) -> iced_native::Length {
         self.width
     }
 
-    fn height(&self) -> iced::Length {
+    fn height(&self) -> iced_native::Length {
         self.height
     }
 
@@ -67,8 +67,8 @@ where
         theme: &Renderer::Theme,
         style: &iced_native::renderer::Style,
         layout: iced_native::Layout<'_>,
-        cursor_position: iced::Point,
-        viewport: &iced::Rectangle,
+        cursor_position: iced_native::Point,
+        viewport: &iced_native::Rectangle,
     ) {
         renderer.fill_quad(
             iced_native::renderer::Quad {

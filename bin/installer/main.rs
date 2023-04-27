@@ -25,6 +25,7 @@ fn main() {
             transparent: false,
             always_on_top: false,
             icon: None,
+            platform_specific: iced::window::PlatformSpecific,
         },
         flags,
         default_font: None,

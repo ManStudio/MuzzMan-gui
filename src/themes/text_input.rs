@@ -14,6 +14,7 @@ impl iced::widget::text_input::StyleSheet for TextInputStyle {
                 border_radius: 100.0,
                 border_width: 1.0,
                 border_color: Color::BLACK,
+                icon_color: Color::BLACK,
             },
         }
     }
@@ -32,6 +33,22 @@ impl iced::widget::text_input::StyleSheet for TextInputStyle {
 
     fn selection_color(&self, _style: &Self::Style) -> iced::Color {
         Color::from_rgb(0.7, 0.0, 0.0)
+    }
+
+    fn disabled_color(&self, style: &Self::Style) -> Color {
+        Color::from_rgb(0.6, 0.6, 0.6)
+    }
+
+    fn disabled(&self, style: &Self::Style) -> Appearance {
+        match self {
+            TextInputStyle::Text => Appearance {
+                background: iced::Background::Color(Color::from_rgb(0.1, 0.1, 0.1)),
+                border_radius: 100.0,
+                border_width: 1.0,
+                border_color: Color::BLACK,
+                icon_color: Color::BLACK,
+            },
+        }
     }
 }
 
